@@ -588,7 +588,7 @@ function wakePage(c) {
     const film = () => (el.contentDocument !== before ? el.contentWindow?.film : null);
     while (!(film() && typeof film().frame === 'function')) {
       if (c.waking !== mine) return;
-      if (performance.now() - t0 > 10000) throw new Error(`${c.row.src}: window.film with a frame() function did not appear`);
+      if (performance.now() - t0 > 30000) throw new Error(`${c.row.src}: window.film with a frame() function did not appear`);
       await new Promise((r) => setTimeout(r, 20));
     }
     const win = el.contentWindow;

@@ -89,8 +89,8 @@ openfilm skill remove <name>
 const RAW = process.argv.slice(2);
 /* the command as the agent can type it here: the one that ran it when it says so (OPENFILM_RUN: the development
    checkout's .dev/bin/openfilm), through npx always the newest (npx keeps the first one it fetched for a bare name),
-   else `openfilm` where it is installed */
-const RUN = process.env.OPENFILM_RUN || (process.env.npm_command === 'exec' ? 'npx -y openfilm@latest' : 'openfilm');
+   else `kinocode` where it is installed (the desktop app's command; `openfilm` is kept beside it) */
+const RUN = process.env.OPENFILM_RUN || (process.env.npm_command === 'exec' ? 'npx -y openfilm@latest' : 'kinocode');
 /**
  * A newer openfilm, said once in a line before what the command prints: looked up on npm (at most daily, briefly) when
  * a session starts (the manual, open), else only as learnt before, so look, render and get never wait for it.
@@ -119,8 +119,8 @@ if (RAW[0] === 'get') {
   process.exit(result.code);
 }
 
-/* the help speaks the name this was run as: `openfilm` or `npx openfilm` */
-const named = (text) => text.replace(/^( {2})?openfilm(?= )/gm, `$1${RUN}`).replace('`openfilm <command>', `\`${RUN} <command>`);
+/* the help speaks the name this was run as: `kinocode` or `npx openfilm` */
+const named = (text) => text.replace(/(?<![@w-])openfilm(?= (?:open|look|render|get|skills?|update|doctor|<command>|<name>|— ))/g, RUN).replaceAll('OpenFilm', 'КиноКод');
 let parsed;
 try {
   parsed = parseArgs({

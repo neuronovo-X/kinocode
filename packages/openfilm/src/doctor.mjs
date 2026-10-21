@@ -219,11 +219,7 @@ export async function doctor({ run = 'openfilm', env = process.env, studio = nul
   checks.push({ label: 'Projects', text: `${at(projects)}${existsSync(projects) ? (projectsOk ? '' : ' (not writable)') : ' (not made yet)'}${gb(freeSpace(projects))}`,
     ...(projectsOk ? {} : { problem: `OpenFilm cannot write to ${at(projects)}: choose another folder in Studio's Settings → General` }) });
 
-  if (network) {
-    const reached = await fetch('https://registry.npmjs.org/openfilm', { method: 'HEAD', signal: AbortSignal.timeout(5000) }).then((r) => r.ok, () => false);
-    checks.push(reached ? { label: 'Network', text: 'npm reachable' }
-      : { label: 'Network', text: 'npm not reachable', problem: 'npx and updates need registry.npmjs.org: check the network, a proxy, or the agent\'s sandbox' });
-  }
+  /* КиноКод: no network check against the upstream `openfilm` package on npm (it has no updates there) */
 
   const log = join(data, 'logs', 'studio.log');
   const trouble = existsSync(log) ? logTrouble(readFileSync(log, 'utf8')).map((line) => (home.length > 1 ? line.replaceAll(home, '~') : line)) : [];

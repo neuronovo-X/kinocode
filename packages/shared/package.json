@@ -5,7 +5,7 @@
   "type": "module",
   "license": "MIT",
   "description": "What OpenFilm's clients share: a chat turn and its public events, the agent's activity, prompt references, titles and Markdown parsing. Part of the desktop app; not published.",
-  "homepage": "https://openfilm.dev",
+  "homepage": "https://нейроново.рф",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/openfilm/openfilm.git",

@@ -27,7 +27,7 @@ const env = {
   OPENFILM_HOME: join(DEV, 'home'),
   OPENFILM_EXPORTS: join(DEV, 'exports'),
   /* the person's library, wherever they chose to keep it (src/locations.mjs) */
-  OPENFILM_SHARED_HOME: process.env.OPENFILM_SHARED_HOME || join(homedir(), '.openfilm'),
+  OPENFILM_SHARED_HOME: process.env.OPENFILM_SHARED_HOME || join(homedir(), '.kinocode'),
   OPENFILM_STUDIO_PORT: process.env.OPENFILM_STUDIO_PORT || '4848',
   OPENFILM_NO_UPDATE_CHECK: '1',
   /* Studio itself, without the supervisor `openfilm open` gives it: this script starts it again when its code changes */

@@ -7,15 +7,15 @@ import { parseSkillFile } from './skills.mjs';
 const SKILLS = join(import.meta.dirname, '..', 'skills');
 const NAMES = readdirSync(SKILLS, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
 
-test('every official skill: a SKILL.md named as its folder, with a description, and a title and summary in five languages', () => {
+test('every official skill: a SKILL.md named as its folder, with a description, and a title and summary in six languages', () => {
   assert.ok(NAMES.length > 0);
   for (const name of NAMES) {
     const { fields } = parseSkillFile(readFileSync(join(SKILLS, name, 'SKILL.md'), 'utf8'));
     assert.equal(fields.name, name);
     assert.ok(fields.description.length > 80, `${name} says when to use it`);
     const shown = JSON.parse(readFileSync(join(SKILLS, name, 'openfilm.json'), 'utf8'));
-    assert.equal(shown.repository, `https://github.com/openfilm/skills/tree/main/skills/${name}`);
-    for (const lang of ['en', 'zh-CN', 'ja', 'ko', 'es']) {
+    assert.equal(shown.repository, `https://github.com/neuronovo-X/kinocode/tree/ru/packages/openfilm/skills/${name}`);
+    for (const lang of ['en', 'ru', 'zh-CN', 'ja', 'ko', 'es']) {
       assert.ok(shown.title[lang], `${name} title ${lang}`);
       assert.ok(shown.summary[lang], `${name} summary ${lang}`);
     }

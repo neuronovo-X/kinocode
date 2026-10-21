@@ -41,7 +41,7 @@ export class ProjectError extends Error {
 }
 
 /** Where Studio keeps its own state (not projects): ~/.openfilm, or OPENFILM_HOME. */
-export const studioHome = () => process.env.OPENFILM_HOME || join(homedir(), '.openfilm');
+export const studioHome = () => process.env.OPENFILM_HOME || join(homedir(), '.kinocode');
 
 /**
  * The key this machine's Studio opens with (~/.openfilm/key, readable by this user only), the same at every launch: an

@@ -1,21 +1,21 @@
-name: Skill feedback
-description: How a skill worked for you, or a skill you wish there were.
+name: Отзыв о скилле
+description: Как сработал скилл или какого скилла не хватает.
 labels: [skills]
 body:
   - type: input
     id: skill
     attributes:
-      label: The skill
-      description: Its name, or its link if you added it from one. Leave it empty for a skill you wish there were.
+      label: Скилл
+      description: Название или ссылка, если добавляли по ссылке. Оставьте пустым, если такого скилла пока нет.
   - type: textarea
     id: what
     attributes:
-      label: What happened
-      description: What you asked for, what the agent made with the skill, and what you hoped for.
+      label: Что произошло
+      description: Что вы просили, что агент сделал со скиллом и чего вы ждали.
     validations:
       required: true
   - type: input
     id: agent
     attributes:
-      label: The agent
-      description: Which agent and model you used, if you know.
+      label: Агент
+      description: Какой агент и модель, если знаете.

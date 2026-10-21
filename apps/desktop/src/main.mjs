@@ -256,8 +256,8 @@ async function closeTab(id) {
   if (!tab) return;
   if (tab.working) {
     const { response } = await dialog.showMessageBox(win, {
-      type: 'warning', buttons: ['Close Tab', 'Cancel'], defaultId: 1, cancelId: 1,
-      message: 'An agent is still working in this project.', detail: 'Closing the tab stops it.',
+      type: 'warning', buttons: ['Закрыть вкладку', 'Отмена'], defaultId: 1, cancelId: 1,
+      message: 'В этом проекте ещё работает агент.', detail: 'Если закрыть вкладку, он остановится.',
     });
     if (response !== 0) return;
   }
@@ -359,7 +359,7 @@ async function openProjectFolder() {
     await studioApi('/api/open', 'POST', { path: folder, fallback: 0 });
     focusWindow();
   } catch (error) {
-    void dialog.showMessageBox(win, { type: 'warning', message: 'This folder can’t be opened as a project.', detail: error.message });
+    void dialog.showMessageBox(win, { type: 'warning', message: 'Эту папку нельзя открыть как проект.', detail: error.message });
   }
 }
 
@@ -453,7 +453,7 @@ async function start() {
   const env = childEnvironment({
     shell: shellEnv,
     extra: {
-      OPENFILM_HOME: IDENTITY.studioHome ?? process.env.OPENFILM_HOME ?? join(app.getPath('home'), '.openfilm'),
+      OPENFILM_HOME: IDENTITY.studioHome ?? process.env.OPENFILM_HOME ?? join(app.getPath('home'), '.kinocode'),
       ...((IDENTITY.library ?? process.env.OPENFILM_LIBRARY) ? { OPENFILM_LIBRARY: IDENTITY.library ?? process.env.OPENFILM_LIBRARY } : {}),
       /* a flavour with a home of its own still shares the person's library (src/locations.mjs) */
       ...(IDENTITY.sharedHome ? { OPENFILM_SHARED_HOME: IDENTITY.sharedHome } : {}),

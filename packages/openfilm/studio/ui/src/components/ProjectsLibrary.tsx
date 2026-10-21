@@ -226,7 +226,8 @@ const COVER_WAIT_MS = 4000;
 
 export function LauncherSwitch({ view, onView }: { view: LauncherView; onView: (view: LauncherView) => void }) {
   const t = useT();
-  return <TitleSwitch items={[{ id: 'projects' as const, label: t('launcher.projects') }, { id: 'examples' as const, label: t('launcher.examples') }]} value={view} onChange={onView} />;
+  /* КиноКод: no examples catalog, the projects only */
+  return <TitleSwitch items={[{ id: 'projects' as const, label: t('launcher.projects') }]} value={view} onChange={onView} />;
 }
 
 

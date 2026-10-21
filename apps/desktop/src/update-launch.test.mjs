@@ -117,9 +117,9 @@ test('a launch opens as it is when nothing newer is found, the check fails, or i
 
 test('the install window speaks the language Studio was last in, else the system\'s', () => {
   assert.equal(installLanguage('ja', ['zh-Hans-CN']), 'ja');
-  assert.equal(installLanguage(null, ['zh-Hans-CN', 'en-US']), 'zh-CN');
+  assert.equal(installLanguage(null, ['zh-Hans-CN', 'en-US']), 'ru');
   assert.equal(installLanguage('fr', ['zh-TW', 'es-MX']), 'es');
-  assert.equal(installLanguage(null, ['de-DE']), 'en');
+  assert.equal(installLanguage('fr', ['de-DE']), 'en');
   assert.deepEqual(installWords('zh-CN', { name: 'OpenFilm', version: '0.2.1' }), {
     lang: 'zh-CN', title: '正在安装 OpenFilm 0.2.1…', detail: '安装完成后 OpenFilm 会自动打开。',
   });

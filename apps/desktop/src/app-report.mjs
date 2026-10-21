@@ -43,7 +43,7 @@ export function appReport({ version, flavor, packaged, channel = null, electron,
   const own = agents.filter((a) => a.id !== 'byok');
   const byok = agents.find((a) => a.id === 'byok');
   return [
-    'OpenFilm desktop app',
+    'КиноКод desktop app',
     '',
     `  App            ${version} (${flavor}${packaged ? '' : ', from source'}${channel ? `, ${channel} updates` : ''}; Electron ${electron})`,
     `  PATH from      ${pathSource ?? 'not read yet'}`,

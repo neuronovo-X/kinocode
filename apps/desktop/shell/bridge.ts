@@ -268,7 +268,7 @@ const INSET_RIGHT = 138;
 
 const host: StudioHost = {
   version: 1,
-  name: 'OpenFilm',
+  name: 'КиноКод',
   projectChanged,
   ...(mac ? { titlebar: { inset: INSET, onChange: (listener: Listener<number>) => { fullScreen.on((full) => listener(full ? 6 : INSET)); } } } : {}),
   ...(windows ? { titlebar: { inset: 6, insetRight: INSET_RIGHT } } : {}),
@@ -283,7 +283,7 @@ const host: StudioHost = {
   settings: { onOpen: (listener) => native.onOpenSettings(listener) },
   /* read live: Studio may read the panel before or after the kept layout arrives */
   panel: {
-    label: 'Chat',
+    label: 'Чат',
     get open() { return layout.open; },
     get width() { return shownWidth(); },
     get assets() { return panelState().assets; },

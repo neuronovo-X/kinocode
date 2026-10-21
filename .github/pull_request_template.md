@@ -1,11 +1,11 @@
-## What and why
+## Что и зачем
 
-<!-- What this changes, and why. Link the issue it fixes (Fixes #123). -->
+<!-- Что меняется и почему. Ссылка на issue, если исправляет (Fixes #123). -->
 
-## Checklist
+## Проверка
 
-- [ ] One change
-- [ ] A test, if it fixes a bug
-- [ ] SPEC.md updated, if it changes film.html
-- [ ] A new media provider: tests against a fake service, what the real service did (never a key), its mark, its words in five languages
-- [ ] `pnpm test` and `pnpm typecheck` pass
+- [ ] Одно изменение
+- [ ] Тест, если исправляет ошибку
+- [ ] SPEC.md обновлён, если меняется film.html
+- [ ] Новый провайдер медиа: тесты против поддельного сервиса, что ответил настоящий (без ключей), его метка, строки на всех языках интерфейса (включая ru)
+- [ ] `pnpm test` и `pnpm typecheck` проходят

@@ -1,73 +1,72 @@
-name: Bug report
-description: Something in OpenFilm does not work as it should.
+name: Ошибка
+description: Что-то в КиноКоде работает не так, как должно.
 labels: [bug]
 body:
   - type: input
     id: version
     attributes:
-      label: OpenFilm version
-      description: What `openfilm --version` prints.
-      placeholder: 0.1.2
+      label: Версия КиноКода
+      description: Настройки → О программе, или что выводит `kinocode --version`.
+      placeholder: 0.2.4
     validations:
       required: true
   - type: input
     id: os
     attributes:
-      label: Operating system
-      placeholder: macOS 15.5, Windows 11, Ubuntu 24.04…
+      label: Система
+      placeholder: Windows 11, macOS 15.5, Ubuntu 24.04…
     validations:
       required: true
   - type: dropdown
     id: agent
     attributes:
-      label: Agent
-      description: Which coding agent ran OpenFilm, if any.
+      label: Агент
+      description: Какой агент работал с КиноКодом, если был.
       options:
-        - None (Studio or the command by hand)
+        - Без агента (Studio или команда вручную)
         - Claude Code
         - Codex
         - Cursor
-        - Other (say which below)
+        - Другой (напишите ниже)
     validations:
       required: true
   - type: textarea
     id: report
     attributes:
-      label: Diagnostic report
+      label: Диагностический отчёт
       description: |
-        In Studio: Settings → Developer → Copy report (or, in the desktop app, Copy diagnostic report under the message
-        that failed), then paste it here. Without Studio, paste what `npx openfilm doctor` prints. Paths in your home
-        folder show as ~, and it has no keys or accounts. If neither runs, say so. For more, attach the diagnostic file
-        from Settings → Developer → Export, after a look at it.
+        В Studio: Настройки → Для разработчиков → Скопировать отчёт (в приложении — «Скопировать диагностический отчёт»
+        под сообщением, на котором случилась ошибка), и вставьте сюда. Без Studio — вывод `kinocode doctor`. Пути в
+        домашней папке показаны как ~, ключей и аккаунтов там нет. Если ничего не запускается, так и напишите.
       render: text
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
-      label: Steps to reproduce
+      label: Как повторить
       placeholder: |
-        1. openfilm open demo
+        1. kinocode open demo
         2. …
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
-      label: What you expected
+      label: Что ожидали
     validations:
       required: true
   - type: textarea
     id: actual
     attributes:
-      label: What happened
-      description: The command's output or the error, as text.
+      label: Что произошло
+      description: Вывод команды или текст ошибки.
     validations:
       required: true
   - type: textarea
     id: film
     attributes:
-      label: The film or logs
+      label: Фильм или логи
       description: |
-        If you can, attach the film folder (zipped, without large media) or the smallest film.html that shows the bug,
-        and Studio's log (~/.openfilm/logs/studio.log). Leave out anything private, such as keys.
+        Если можете, приложите папку фильма (архивом, без тяжёлых медиа) или минимальный film.html с ошибкой и лог
+        Studio (~/.kinocode/logs/studio.log). Не прикладывайте ничего личного, например ключи.

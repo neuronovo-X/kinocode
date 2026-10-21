@@ -3,7 +3,7 @@
   "version": "0.2.4",
   "description": "The open source AI video agent: films as web pages, the manual that teaches your coding agent to make them, the `openfilm` command, and Studio, the editor to change anything in them.",
   "license": "MIT",
-  "homepage": "https://openfilm.dev",
+  "homepage": "https://нейроново.рф",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/openfilm/openfilm.git",
@@ -23,7 +23,7 @@
   ],
   "type": "module",
   "bin": {
-    "openfilm": "bin/openfilm.mjs"
+    "kinocode": "bin/openfilm.mjs"
   },
   "exports": {
     "./film-doc": "./src/film-doc.mjs",
@@ -41,10 +41,8 @@
   "files": [
     "README.md",
     "SPEC.md",
-    "TRADEMARK.md",
     "bin",
     "skills",
-    "examples-index",
     "src",
     "!src/*.test.mjs",
     "MANUAL.md",

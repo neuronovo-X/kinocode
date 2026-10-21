@@ -12,11 +12,9 @@ before(async () => {
   scratch = mkdtempSync(join(tmpdir(), 'of-sources-'));
   process.env.OPENFILM_HOME = join(scratch, 'home');
   process.env.OPENFILM_LIBRARY = join(scratch, 'library');
-  process.env.OPENFILM_EXAMPLES_INDEX = join(scratch, 'examples.json');
-  writeFileSync(process.env.OPENFILM_EXAMPLES_INDEX, JSON.stringify({ examples: [{ folder: 'one-prompt', title: 'One Prompt', duration: '1:29' }] }));
   studio = await startStudio({ port: 0, openBrowser: () => {} });
 });
-after(() => { delete process.env.OPENFILM_EXAMPLES_INDEX; return studio.close(); });
+after(() => studio.close());
 
 const api = async (path, { method = 'GET', body } = {}) => {
   const res = await fetch(`${studio.origin}/api/${path}`, {
@@ -52,9 +50,9 @@ test('a fetch: a wrong address is refused at once, with its code; an unknown job
   assert.equal((await api('projects/fetch/nope')).status, 404);
 });
 
-test('the examples, from the index Studio is pointed at', async () => {
-  const { body } = await api('examples');
-  assert.deepEqual(body.examples.map((e) => [e.id, e.duration, e.url]), [['one-prompt', 89, 'https://github.com/openfilm/examples/tree/main/one-prompt']]);
+test('КиноКод has no examples catalog: Studio answers no examples route', async () => {
+  const { status } = await api('examples');
+  assert.equal(status, 404);
 });
 
 test('a project whose folder moved is located, though its folder is gone; it opens again', async () => {

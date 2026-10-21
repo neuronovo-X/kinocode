@@ -19,6 +19,22 @@ export const UPDATE_DIALOG_WORDS = {
       'install-failed': 'Could not install the update. Quit {name} and open it again to install it.',
     },
   },
+  ru: {
+    title: 'Проверка обновлений', ok: 'ОК', restart: 'Перезапустить', later: 'Позже',
+    upToDate: 'У вас последняя версия {name}', version: 'Версия {version}', betaVersion: 'Версия {version} (бета)',
+    ready: '{name} {version} готов', readyDetail: 'Перезапустите сейчас или он установится при выходе и откроется уже новой версией.',
+    notRestarting: 'Пока без перезапуска',
+    downloading: 'Скачиваем {name} {version}', downloadingDetail: 'Загрузка идёт в фоне — продолжайте работать. Когда будет готово, слева вверху появится кнопка «Перезапустить».',
+    failed: 'Не удалось проверить обновления', failedDetail: '{error} {name} попробует ещё раз сам.',
+    errors: {
+      offline: 'Сервис обновлений недоступен. Проверьте подключение и попробуйте снова.',
+      unavailable: 'Обновления сейчас недоступны. Попробуйте позже.',
+      failed: 'Не удалось обновиться. Попробуйте позже.',
+      'agent-busy': 'Агент ещё работает. Перезапустите, когда закончит.',
+      exporting: 'Идёт экспорт. Перезапустите, когда он закончится.',
+      'install-failed': 'Не удалось установить обновление. Закройте {name} и откройте снова.',
+    },
+  },
   'zh-CN': {
     title: '检查更新', ok: '好', restart: '重启', later: '稍后',
     upToDate: '{name} 已是最新版本', version: '版本 {version}', betaVersion: '版本 {version}（Beta）',

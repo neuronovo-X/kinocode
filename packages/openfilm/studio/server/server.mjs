@@ -33,9 +33,8 @@ import {
   ProjectError, createFolder, createProject, deleteFolder, deleteProject, libraryRoot, listFolders, listProjects, locateProject, markOpened, moveFolder, moveLibrary,
   moveProjectToFolder, openProject, projectById, renameFolder, renameProject, studioHome, studioKey, TOOL_DIR,
 } from './projects.mjs';
-import { FetchError, createFetches, fetchFilm, parseRepoUrl } from './fetch-repo.mjs';
+import { FetchError, createFetches } from './fetch-repo.mjs';
 import { BrowseError, browseFolder, browsePlaces } from './browse.mjs';
-import { exampleFile, exampleFolder, listExamples } from './examples.mjs';
 import { pickFiles, pickFolder } from './folder-picker.mjs';
 import { readPrefs, writePrefs } from './prefs.mjs';
 import { ensureProxies } from './proxies.mjs';
@@ -101,7 +100,7 @@ export function desktopInstaller(os, arch, base = DESKTOP_FILES) {
  * is working in right now (an app with a chat), which cannot be renamed or deleted meanwhile. Resolves once both servers listen.
  * @param {{ port?: number, key?: string, openBrowser?: (url: string) => void, advertise?: boolean, onQuit?: () => void, stays?: boolean, editorDir?: string, working?: () => string[] }} [options]
  */
-export async function startStudio({ port = 4747, key, openBrowser = systemBrowser, advertise = false, onQuit, stays = false, editorDir = EDITOR_DIR, working = () => [] } = {}) {
+export async function startStudio({ port = 4242, key, openBrowser = systemBrowser, advertise = false, onQuit, stays = false, editorDir = EDITOR_DIR, working = () => [] } = {}) {
   let COOKIE = cookieName(port);
   let FRAMED = framedCookieName(port);
   /** The key from either session cookie. */
@@ -410,24 +409,6 @@ export async function startStudio({ port = 4747, key, openBrowser = systemBrowse
       const listing = await browseFolder(url.searchParams.get('path'));
       const places = await browsePlaces({ library: libraryRoot(), recent: (await listProjects()).filter((p) => !p.missing).map((p) => p.path) });
       return json(res, 200, { ...listing, ...places });
-    }
-    /* the example films (examples.mjs): none when the index cannot be read */
-    if (parts[0] === 'examples' && parts.length === 1 && req.method === 'GET') return json(res, 200, { examples: await listExamples() });
-    /* a poster or preview beside an index read from this computer (examples.mjs exampleFile) */
-    if (parts[0] === 'examples' && parts[1] === 'file' && parts.length > 2 && req.method === 'GET') {
-      return sendMedia(req, res, exampleFile(parts.slice(2).map(decodeURIComponent).join('/')), { keep: true });
-    }
-    /* an example's folder on this computer, to point an agent at (examples.mjs exampleFolder) */
-    if (parts[0] === 'examples' && parts.length === 3 && parts[2] === 'folder' && req.method === 'POST') {
-      try {
-        const folder = await exampleFolder(decodeURIComponent(parts[1]), {
-          home: studioHome(),
-          fetchFolder: (address, into) => fetchFilm(parseRepoUrl(address), { library: into }),
-        });
-        return json(res, 200, { folder });
-      } catch (e) {
-        throw new HttpError(e instanceof FetchError ? e.status : 404, e instanceof Error ? e.message : String(e));
-      }
     }
     /* the skills a project can be made with (../../src/skills.mjs): its own, the person's, the official ones */
     if (parts[0] === 'skills' && parts.length === 1 && req.method === 'GET') {
@@ -1005,8 +986,6 @@ export async function startStudio({ port = 4747, key, openBrowser = systemBrowse
     })().catch(() => refuse('500 Internal Server Error'));
   });
   await new Promise((done, fail) => { editor.once('error', fail); editor.listen(port, '127.0.0.1', () => done(undefined)); });
-  /* the examples index is asked for as Studio starts, so the Examples tab has GitHub's newest when it opens */
-  void listExamples().catch(() => {});
   const address = /** @type {import('node:net').AddressInfo} */ (editor.address());
   origin = `http://127.0.0.1:${address.port}`;
   COOKIE = cookieName(address.port);
@@ -1117,7 +1096,7 @@ function sendEditor(/** @type {Res} */ res, /** @type {string} */ dir, /** @type
   const page = join(root, 'index.html');
   /* no referrer: the page's address holds the key, and a link it opens must not carry it to another site */
   res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer', ...headers });
-  res.end(existsSync(page) ? readFileSync(page) : '<!doctype html><meta charset="utf-8"><title>OpenFilm Studio</title><p>The editor is not built: run <code>npm run build:ui</code>.</p>');
+  res.end(existsSync(page) ? readFileSync(page) : '<!doctype html><meta charset="utf-8"><title>КиноКод Studio</title><p>The editor is not built: run <code>npm run build:ui</code>.</p>');
 }
 
 /** A file in the system's file manager, selected. */

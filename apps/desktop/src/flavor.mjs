@@ -22,20 +22,20 @@ import { fileURLToPath } from 'node:url';
 const packaged = Boolean(process.versions.electron) && !process.defaultApp;
 
 export const FLAVORS = Object.freeze({
-  release: { productName: 'OpenFilm', bundleId: 'dev.openfilm.desktop', studioPort: 4747, studioHome: null, library: null, sharedHome: null },
+  release: { productName: 'КиноКод', bundleId: 'ru.neuronovo.kinocode', studioPort: 4242, studioHome: null, library: null, sharedHome: null },
   preview: {
-    productName: 'OpenFilm Preview', bundleId: 'dev.openfilm.desktop.preview', studioPort: 4777,
-    studioHome: join(homedir(), '.openfilm-preview'), library: null, sharedHome: join(homedir(), '.openfilm'),
+    productName: 'КиноКод Preview', bundleId: 'ru.neuronovo.kinocode.preview', studioPort: 4777,
+    studioHome: join(homedir(), '.kinocode-preview'), library: null, sharedHome: join(homedir(), '.kinocode'),
   },
   dev: {
-    productName: 'OpenFilm Dev', bundleId: 'dev.openfilm.desktop.dev', studioPort: 4757,
-    studioHome: join(homedir(), '.openfilm-dev'), library: null, sharedHome: join(homedir(), '.openfilm'),
+    productName: 'КиноКод Dev', bundleId: 'ru.neuronovo.kinocode.dev', studioPort: 4757,
+    studioHome: join(homedir(), '.kinocode-dev'), library: null, sharedHome: join(homedir(), '.kinocode'),
   },
 });
 
 const benchDir = process.env.OPENFILM_BENCH_DIR ?? '';
 const BENCH = Object.freeze({
-  productName: 'OpenFilm Bench', bundleId: 'dev.openfilm.desktop.bench', studioPort: 4767,
+  productName: 'КиноКод Bench', bundleId: 'ru.neuronovo.kinocode.bench', studioPort: 4767,
   studioHome: join(benchDir, 'home'), library: join(benchDir, 'projects'), sharedHome: null, userData: join(benchDir, 'data'),
 });
 

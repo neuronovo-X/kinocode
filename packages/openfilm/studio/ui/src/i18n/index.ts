@@ -3,19 +3,21 @@
  * path in neither comes back as itself, so a typo shows on screen instead of an empty label. Placeholders (`{n}`) are
  * filled by the caller.
  *
- * The language is the person's choice in Settings → General, kept in localStorage `openfilm.language`, or the
- * system's ("system", the default: the first of the browser's languages there is a table for, else English). It is
- * shown as `<html lang>`, which an app embedding Studio reads to match it.
+ * The language is the person's choice in Settings → General, kept in localStorage `openfilm.language`: Russian until
+ * they choose (КиноКод), or the system's ("system": the first of the browser's languages there is a table for, else
+ * English). It is shown as `<html lang>`, which an app embedding Studio reads to match it.
  */
 import React from 'react';
 import { en } from './en.ts';
 import { es } from './es.ts';
 import { ja } from './ja.ts';
 import { ko } from './ko.ts';
+import { ru } from './ru.ts';
 import { zhCN } from './zh-CN.ts';
 
 export const LANGUAGES = [
   { code: 'en', name: 'English', words: en },
+  { code: 'ru', name: 'Русский', words: ru },
   { code: 'zh-CN', name: '简体中文', words: zhCN },
   { code: 'ja', name: '日本語', words: ja },
   { code: 'ko', name: '한국어', words: ko },
@@ -68,11 +70,15 @@ export function languageFor(asked: readonly string[]): Language {
   return 'en';
 }
 
+/** КиноКод: Russian until the person chooses; "system" is kept as a choice of its own */
+const DEFAULT: Language = 'ru';
+
 function savedChoice(): LanguageChoice {
   try {
     const value = localStorage.getItem(KEY);
-    return LANGUAGES.some((l) => l.code === value) ? value as Language : 'system';
-  } catch { return 'system'; }
+    if (value === 'system') return 'system';
+    return LANGUAGES.some((l) => l.code === value) ? value as Language : DEFAULT;
+  } catch { return DEFAULT; }
 }
 
 function current(): Language {
@@ -104,8 +110,7 @@ if (typeof window !== 'undefined') {
 
 export function setLanguageChoice(choice: LanguageChoice) {
   try {
-    if (choice === 'system') localStorage.removeItem(KEY);
-    else localStorage.setItem(KEY, choice);
+    localStorage.setItem(KEY, choice);
   } catch { /* not kept past this page */ }
   apply();
 }
@@ -114,12 +119,12 @@ const subscribe = (on: () => void) => { listeners.add(on); return () => { listen
 
 /** The language shown now; a change draws again whoever uses it. */
 export function useLanguage(): Language {
-  return React.useSyncExternalStore(subscribe, () => shown, () => 'en' as Language);
+  return React.useSyncExternalStore(subscribe, () => shown, () => DEFAULT);
 }
 
 /** The person's choice (or "system") and a way to change it. */
 export function useLanguageChoice(): [LanguageChoice, (choice: LanguageChoice) => void] {
-  const choice = React.useSyncExternalStore(subscribe, savedChoice, () => 'system' as LanguageChoice);
+  const choice = React.useSyncExternalStore(subscribe, savedChoice, () => DEFAULT as LanguageChoice);
   return [choice, setLanguageChoice];
 }
 

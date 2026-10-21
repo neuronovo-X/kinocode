@@ -344,7 +344,7 @@ test('a Codex older than the ones tried, that did not start, is said to need an 
   const failed = new Error('Pending response rejected since connection got disposed');
   const old = codexTooOld('codex', '/usr/local/bin/codex', failed, () => '0.104.0');
   assert.equal(old.code, 'outdated');
-  assert.match(old.message, /^Codex 0\.104\.0 is older than OpenFilm needs \(0\.132\.0 or later\): update Codex, then try again\. Pending response/);
+  assert.match(old.message, /^Codex 0\.104\.0 is older than КиноКод needs \(0\.132\.0 or later\): update Codex, then try again\. Pending response/);
   assert.equal(codexTooOld('codex', '/usr/local/bin/codex', failed, () => '0.163.0'), failed);
   assert.equal(codexTooOld('codex', '/usr/local/bin/codex', failed, () => null), failed, 'a version it cannot tell');
   const signIn = Object.assign(new Error('Codex is not signed in.'), { code: 'sign-in' });

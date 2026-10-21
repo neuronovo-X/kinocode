@@ -15,8 +15,8 @@ import { accessSync, constants, existsSync, mkdirSync, readFileSync, readdirSync
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
 
-/** Studio's own home (its settings and keys, not the person's work): OPENFILM_HOME, else ~/.openfilm. */
-export const studioHomeDir = () => process.env.OPENFILM_HOME || join(homedir(), '.openfilm');
+/** Studio's own home (its settings and keys, not the person's work): OPENFILM_HOME, else ~/.kinocode. */
+export const studioHomeDir = () => process.env.OPENFILM_HOME || join(homedir(), '.kinocode');
 
 /**
  * The Studio home whose prefs.json holds what every OpenFilm on this computer shares (where the library is, the skills
@@ -47,9 +47,9 @@ export function setSharedPref(key, value, home = sharedHome()) {
   renameSync(`${at}.${process.pid}.tmp`, at);
 }
 
-/** Where new projects go unless the person chose: OPENFILM_LIBRARY, else ~/Movies/OpenFilm/Projects on macOS, ~/Videos/OpenFilm/Projects elsewhere. */
+/** Where new projects go unless the person chose: OPENFILM_LIBRARY, else ~/Movies/КиноКод/Projects on macOS, ~/Videos/КиноКод/Projects elsewhere. */
 export const libraryDefault = () => process.env.OPENFILM_LIBRARY
-  || join(homedir(), process.platform === 'darwin' ? 'Movies' : 'Videos', 'OpenFilm', 'Projects');
+  || join(homedir(), process.platform === 'darwin' ? 'Movies' : 'Videos', 'КиноКод', 'Projects');
 
 /**
  * Where exports go unless a folder is picked when exporting: OPENFILM_EXPORTS, else `exports` in OPENFILM_HOME when

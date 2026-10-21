@@ -3,7 +3,7 @@
  * web searches from. The recommended ones first (lib/providers RECOMMENDED_PROVIDERS), the rest under More, folded
  * until opened (open from the start when one of them is connected).
  *
- * ElevenLabs, OpenAI, Google, Microsoft Azure, fal.ai, Groq, Pexels, Pixabay, Brave Search and Tavily connect with the person's
+ * Нейроново (set apart at the top), ElevenLabs, OpenAI, Google, Microsoft Azure, fal.ai, Groq, Pexels, Pixabay, Brave Search and Tavily connect with the person's
  * own key, which pays that service directly when it charges (a key in the environment shows as such and stays there).
  * Which of them makes each kind of media, and with which model, is Settings → Services, with the person's own custom
  * services (CustomServices).
@@ -31,6 +31,7 @@ export function ProvidersSection() {
 
   return (
     <SettingsPage note={t('settings.providers.desc')}>
+      {groups.featured ? <FeaturedRow provider={groups.featured} hook={providers} /> : null}
       <SettingsGroup title={t('settings.providers.groupRecommended')} footnote={t('settings.providers.keyNote')}>
         {groups.recommended.map((provider) => <KeyRow key={provider.id} provider={provider} hook={providers} />)}
       </SettingsGroup>
@@ -82,7 +83,7 @@ function abilityPhrase(verbs: readonly ProviderVerb[], t: (key: string) => strin
 }
 
 /** A service paid with the person's own key: connected by pasting one (kept here, or read from the environment). */
-function KeyRow({ provider, hook }: { provider: OwnProvider; hook: ProvidersHook }) {
+function KeyRow({ provider, hook, featured = false }: { provider: OwnProvider; hook: ProvidersHook; featured?: boolean }) {
   const t = useT();
   const [adding, setAdding] = React.useState(false);
   const [draft, setDraft] = React.useState('');
@@ -103,12 +104,17 @@ function KeyRow({ provider, hook }: { provider: OwnProvider; hook: ProvidersHook
     <Row
       id={provider.id}
       name={provider.name}
-      badge={provider.source ? (
-        <Connected>
-          <span className="font-mono tabular-nums text-[var(--text-faint)]" aria-label={t('settings.providers.keyEnding').replaceAll('{last4}', provider.last4 ?? '')}>
-            •••• {provider.last4}
-          </span>
-        </Connected>
+      badge={provider.source || featured ? (
+        <>
+          {featured ? <span className="rounded-full bg-violet-500/15 px-2 py-0.5 text-[12px] font-medium text-violet-500">{t('settings.providers.featuredTag')}</span> : null}
+          {provider.source ? (
+            <Connected>
+              <span className="font-mono tabular-nums text-[var(--text-faint)]" aria-label={t('settings.providers.keyEnding').replaceAll('{last4}', provider.last4 ?? '')}>
+                •••• {provider.last4}
+              </span>
+            </Connected>
+          ) : null}
+        </>
       ) : null}
       action={provider.source ? (
         <SettingsButton variant="quiet" disabled={saving} onClick={() => void hook.removeKey(provider.id)}>{t('settings.providers.disconnect')}</SettingsButton>
@@ -171,7 +177,20 @@ function KeyRow({ provider, hook }: { provider: OwnProvider; hook: ProvidersHook
         </form>
       ) : null}
     >
-      {abilityPhrase(ABILITY_ORDER.filter((v) => provider.verbs.includes(v)), t)}
+      {featured ? t('settings.providers.featuredNote') : abilityPhrase(ABILITY_ORDER.filter((v) => provider.verbs.includes(v)), t)}
     </Row>
+  );
+}
+
+/** Нейроново, set apart above the groups: a violet edge and glow around the same row every provider has. */
+function FeaturedRow({ provider, hook }: { provider: OwnProvider; hook: ProvidersHook }) {
+  return (
+    <section className="mb-10">
+      <div className="rounded-2xl bg-gradient-to-br from-violet-500/70 via-fuchsia-500/30 to-indigo-500/10 p-px shadow-[0_8px_40px_-12px_rgba(139,92,246,0.55)]">
+        <div className="rounded-[15px] bg-[var(--bg)] bg-[radial-gradient(120%_140%_at_0%_0%,rgba(139,92,246,0.14),transparent_55%)] px-5">
+          <KeyRow provider={provider} hook={hook} featured />
+        </div>
+      </div>
+    </section>
   );
 }

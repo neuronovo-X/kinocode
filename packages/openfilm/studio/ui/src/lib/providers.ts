@@ -57,17 +57,21 @@ export function couldMake(state: ProvidersState, verb: ProviderVerb): string[] {
   return state.providers.filter((p) => !p.source && p.verbs.includes(verb)).map((p) => p.name).sort((a, b) => a.localeCompare(b));
 }
 
-/** The providers Settings › Providers shows first, in this order: the large media services. */
+/** The one Settings › Providers sets apart above the rest: Нейроново, pictures and video in one key. */
+export const FEATURED_PROVIDER = 'neuronovo';
+
+/** The providers Settings › Providers shows next, in this order: the large media services. */
 export const RECOMMENDED_PROVIDERS = ['openai', 'azure', 'google', 'elevenlabs'];
 
 /**
- * Settings › Providers' two groups: the recommended ones in RECOMMENDED_PROVIDERS' order, then the rest by name.
+ * Settings › Providers' groups: the featured one apart, the recommended ones in RECOMMENDED_PROVIDERS' order, then the rest by name.
  * `open` says whether More starts open: when one of its providers is connected, so a connection is never hidden.
  */
 export function providerGroups<P extends Pick<OwnProvider, 'id' | 'name' | 'source'>>(providers: readonly P[]) {
+  const featured = providers.find((p) => p.id === FEATURED_PROVIDER) ?? null;
   const recommended = RECOMMENDED_PROVIDERS.map((id) => providers.find((p) => p.id === id)).filter((p): p is P => Boolean(p));
-  const more = providers.filter((p) => !RECOMMENDED_PROVIDERS.includes(p.id)).sort((a, b) => a.name.localeCompare(b.name));
-  return { recommended, more, open: more.some((p) => p.source) };
+  const more = providers.filter((p) => p.id !== FEATURED_PROVIDER && !RECOMMENDED_PROVIDERS.includes(p.id)).sort((a, b) => a.name.localeCompare(b.name));
+  return { featured, recommended, more, open: more.some((p) => p.source) };
 }
 
 /**

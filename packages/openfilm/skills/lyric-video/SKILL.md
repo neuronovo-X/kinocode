@@ -25,8 +25,8 @@ shown as subtitles are not a lyric video.
 
 Anything you can make pictures and motion with: the web platform and any library on it, Blender or any renderer whose
 output becomes a clip, the person's footage and photos, any font whose license allows it, images, video and sound from
-`npx openfilm get`, your own built-in tools, services the person has keys for, and the song itself to analyse.
-OpenFilm's own rules still hold: the picture at t depends on t alone, a page has no sound, what you render elsewhere
+`kinocode get`, your own built-in tools, services the person has keys for, and the song itself to analyse.
+КиноКод's own rules still hold: the picture at t depends on t alone, a page has no sound, what you render elsewhere
 enters as a clip under `assets/` with the script that made it, and Studio shows a WebVTT beside a sound as subtitles
 over the film. Ask before downloading anything large onto the person's computer.
 

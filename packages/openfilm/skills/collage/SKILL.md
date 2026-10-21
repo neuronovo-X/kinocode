@@ -23,7 +23,7 @@ they make together says what none of them says alone. Surprise us; the expected 
 
 Anything you can make pictures and motion with: the web platform and any library on it, Blender or any renderer whose
 output becomes a clip, the person's photos and scans, any font whose license allows it, images and image search from
-`npx openfilm get`, your own built-in tools, and services the person has keys for. OpenFilm's own rules still hold: the
+`kinocode get`, your own built-in tools, and services the person has keys for. КиноКод's own rules still hold: the
 picture at t depends on t alone, a page has no sound, and what you render elsewhere enters as a clip under `assets/`
 with the script that made it. Ask before downloading anything large onto the person's computer.
 

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
-<title>OpenFilm</title>
+<title>КиноКод</title>
 <style>
   :root { color-scheme: light dark; }
   html, body { height: 100%; margin: 0; }
@@ -18,9 +18,9 @@
 <body>
 <!-- Studio did not start, so there is no page to show: what went wrong, and where the log is (src/main.mjs) -->
 <main>
-  <h1>OpenFilm could not start its editor</h1>
+  <h1>КиноКод не смог запустить редактор</h1>
   <p><code id="message"></code></p>
-  <p>Quit OpenFilm and open it again. If it happens again, the details are in the app's logs folder (studio.log).</p>
+  <p>Закройте КиноКод и откройте снова. Если повторится, подробности — в папке логов приложения (studio.log).</p>
 </main>
 <script>document.getElementById('message').textContent = new URLSearchParams(location.search).get('message') || '';</script>
 </body>

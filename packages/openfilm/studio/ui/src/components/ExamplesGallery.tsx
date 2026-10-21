@@ -154,7 +154,7 @@ export function ExamplesGallery({ mode, projectId = null, heading, initial, onCl
             <button type="button" onClick={() => setOpened(null)} className="mr-auto flex h-8 items-center gap-1.5 rounded-lg pl-1 pr-2.5 text-[13.5px] font-medium text-[var(--text-muted)] transition hover:bg-[var(--bg-hover)] hover:text-[var(--text)]">
               <ArrowLeft size={16} strokeWidth={1.75} />{t('gallery.back')}
             </button>
-          ) : heading ?? <TitleSwitch items={[{ id: 'skills' as const, label: t('gallery.skills') }, { id: 'examples' as const, label: t('gallery.title') }]} value={view} onChange={show} />}
+          ) : heading ?? <TitleSwitch items={[{ id: 'skills' as const, label: t('gallery.skills') }]} value={view} onChange={show} />}
           {onClose ? (
             <button type="button" onClick={onClose} aria-label={t('project.close')}
               className="ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text-faint)] transition hover:bg-[var(--bg-hover)] hover:text-[var(--text)]">

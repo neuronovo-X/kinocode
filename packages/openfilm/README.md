@@ -35,4 +35,4 @@ building a player, renderer or editor. Settings, how it works and the source:
 
 ## License
 
-[MIT](LICENSE). The OpenFilm name and logo are trademarks: see [TRADEMARK.md](TRADEMARK.md).
+[MIT](LICENSE).

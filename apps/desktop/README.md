@@ -21,5 +21,4 @@ Codex, Claude Code, the other agents, your own key, and Studio with your own med
 
 `npm run release` builds the app into `.release/` (git-ignored). Without `OPENFILM_SIGN_IDENTITY` and `APPLE_TEAM_ID`
 it is unsigned. Like a run from source, it never looks for updates: the feed comes from the `openfilm` package's
-`product.json`, empty in the repository. Official builds, signed, notarized and
-published, are produced by the project's release pipeline; see TRADEMARK.md before distributing a build of your own.
+`product.json`, empty in the repository.

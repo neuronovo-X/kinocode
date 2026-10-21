@@ -26,8 +26,8 @@
  *
  *   4. the .dmg is signed and notarized too, so the download itself opens without a warning.
  *
- * Windows: an NSIS installer (OpenFilm-Setup-<version>-<arch>.exe, per user, no admin) and its feed (latest.yml). It is
- * built on this Mac: the program's icon and version are written into OpenFilm.exe with resedit (rcedit would need
+ * Windows: an NSIS installer (kinocode-Setup-<arch>.exe, per user, no admin) and its feed (latest.yml). It is
+ * built on this Mac: the program's icon and version are written into kinocode.exe with resedit (rcedit would need
  * wine). Not code-signed yet (no Windows certificate): SmartScreen asks once, "More info" → "Run anyway".
  *
  * Output: .release/<arch>/out (git-ignored). Nothing is uploaded: official builds are published by the project's
@@ -65,7 +65,10 @@ const official = process.argv.includes('--official');
    folder, Studio home, port and projects (src/flavor.mjs `preview`, from the package's `openfilmFlavor`); no updates */
 const preview = process.argv.includes('--preview');
 if (preview && official) throw new Error('--preview is never the official build');
-const NAME = preview ? 'OpenFilm Preview' : 'OpenFilm';
+const NAME = preview ? 'КиноКод Preview' : 'КиноКод';
+/* the program's and the downloads' file names, in Latin letters: kinocode.exe, kinocode-Setup-x64.exe */
+const FILE = preview ? 'kinocode-preview' : 'kinocode';
+const COPYRIGHT = 'Copyright © 2026 OpenFilm. Copyright (c) 2026 НЕЙРОНОВО';
 const productFile = join(protocol, official ? 'product.official.json' : 'product.json');
 const product = JSON.parse(readFileSync(productFile, 'utf8'));
 const updates = typeof product.desktop?.updates === 'string' ? product.desktop.updates.trim().replace(/\/+$/, '') : '';
@@ -74,6 +77,8 @@ export const FEED = updates ? `${updates}/${win ? 'win' : 'mac'}/${arch}` : null
 const NOTARY_PROFILE = process.env.OPENFILM_NOTARY_PROFILE || 'openfilm-notary';
 
 const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: 'inherit', ...opts });
+/* npm and pnpm are .cmd scripts on Windows: Node starts those only through a shell */
+const SHELL = process.platform === 'win32';
 const pkg = JSON.parse(readFileSync(join(desktop, 'package.json'), 'utf8'));
 
 /* 1. the window's page, and Studio's editor for the package */
@@ -87,17 +92,17 @@ rmSync(work, { recursive: true, force: true });
 mkdirSync(stage, { recursive: true });
 cpSync(join(desktop, 'src'), join(stage, 'src'), { recursive: true, filter: (from) => !from.endsWith('.test.mjs') });
 cpSync(join(desktop, 'shell/dist'), join(stage, 'shell/dist'), { recursive: true });
-const pack = (dir) => execFileSync('npm', ['pack', '--ignore-scripts', '--pack-destination', work, '--silent'], { cwd: dir, encoding: 'utf8' }).trim().split('\n').pop();
+const pack = (dir) => execFileSync('npm', ['pack', '--ignore-scripts', '--pack-destination', work, '--silent'], { cwd: dir, encoding: 'utf8', shell: SHELL }).trim().split('\n').pop();
 const dependencies = { ...pkg.dependencies, openfilm: `file:../${pack(protocol)}` };
 /* npm takes the versions pnpm's lockfile has (locked-versions.mjs): what the tests ran with, not the latest */
-const lockedTree = JSON.parse(execFileSync('pnpm', ['list', '--prod', '--depth', 'Infinity', '--json'], { cwd: desktop, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }))[0];
+const lockedTree = JSON.parse(execFileSync('pnpm', ['list', '--prod', '--depth', 'Infinity', '--json'], { cwd: desktop, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, shell: SHELL }))[0];
 writeFileSync(join(stage, 'package.json'), `${JSON.stringify({
   name: 'openfilm-desktop',
   productName: NAME,
   ...(preview ? { openfilmFlavor: 'preview' } : {}),
   version: pkg.version,
   description: pkg.description,
-  author: 'OpenFilm',
+  author: 'НЕЙРОНОВО',
   license: 'UNLICENSED',
   private: true,
   type: 'module',
@@ -105,7 +110,7 @@ writeFileSync(join(stage, 'package.json'), `${JSON.stringify({
   dependencies,
   overrides: lockedOverrides(lockedTree),
 }, null, 2)}\n`);
-run('npm', ['install', '--omit=dev', '--omit=optional', '--no-audit', '--no-fund', '--no-package-lock', '--loglevel=error'], { cwd: stage });
+run('npm', ['install', '--omit=dev', '--omit=optional', '--no-audit', '--no-fund', '--no-package-lock', '--loglevel=error'], { cwd: stage, shell: SHELL });
 const offLock = versionsOffLock(lockedTree, join(stage, 'node_modules'));
 if (offLock.length) {
   throw new Error(`The installer's packages are not the lockfile's:\n${offLock.map((p) => `  ${p.name} ${p.version} (locked: ${p.locked.join(', ')})`).join('\n')}`);
@@ -122,6 +127,17 @@ else console.warn(`No ffmpeg build for ${platform}-${arch}: this app downloads n
 run(process.execPath, [join(stage, 'node_modules/playwright-core/cli.js'), 'install', 'chromium-headless-shell'], {
   env: { ...process.env, PLAYWRIGHT_BROWSERS_PATH: join(runtime, 'ms-playwright'), PLAYWRIGHT_HOST_PLATFORM_OVERRIDE: win ? 'win64' : arch === 'arm64' ? 'mac15-arm64' : 'mac15' },
 });
+
+/* the licenses (LICENSE and THIRD_PARTY_NOTICES.md, as they are): a page of the Windows installer, and files beside
+   the app (resources/licenses) */
+const licenses = join(work, 'licenses');
+mkdirSync(licenses, { recursive: true });
+const LICENSE_FILES = ['LICENSE', 'THIRD_PARTY_NOTICES.md'];
+for (const f of LICENSE_FILES) cpSync(join(desktop, '..', '..', f), join(licenses, f));
+const licensePage = join(work, 'licenses.txt');
+/* UTF-8 with a byte order mark, and Windows line ends: what the installer's page reads right */
+const licenseText = LICENSE_FILES.map((f) => readFileSync(join(licenses, f), 'utf8')).join('\n\n').split(/\r?\n/).join('\r\n');
+writeFileSync(licensePage, String.fromCharCode(0xfeff) + licenseText);
 
 /* 3. the app */
 const builder = require('electron-builder');
@@ -143,7 +159,7 @@ await builder.build({
       icon: join(desktop, 'build/icon.ico'),
       /* resedit writes the icon and version (afterPack); rcedit would need wine on this Mac */
       signAndEditExecutable: false,
-      artifactName: `${NAME.replace(' ', '-')}-Setup-\${arch}.\${ext}`,
+      artifactName: `${FILE}-Setup-\${arch}.\${ext}`,
     },
     nsis: {
       /* the installer asks where to put the app (the person's own folder by default), so it need not live on C: */
@@ -152,20 +168,22 @@ await builder.build({
       perMachine: false,
       installerIcon: join(desktop, 'build/icon.ico'),
       uninstallerIcon: join(desktop, 'build/icon.ico'),
+      license: licensePage,
       shortcutName: NAME,
       deleteAppDataOnUninstall: false,
-      artifactName: `${NAME.replace(' ', '-')}-Setup-\${arch}.\${ext}`,
+      artifactName: `${FILE}-Setup-\${arch}.\${ext}`,
     },
-    appId: preview ? 'dev.openfilm.desktop.preview' : 'dev.openfilm.desktop',
+    appId: preview ? 'ru.neuronovo.kinocode.preview' : 'ru.neuronovo.kinocode',
     productName: NAME,
-    copyright: 'Copyright © 2026 OpenFilm',
+    executableName: FILE,
+    copyright: COPYRIGHT,
     electronVersion,
     asar: true,
     /* run by Electron as Node from outside the archive: the CLI the agents run, the agents' adapters */
     asarUnpack: ['node_modules/openfilm/**', 'node_modules/@agentclientprotocol/**', 'node_modules/playwright-core/**'],
     files: ['src/**/*', 'shell/dist/**/*', 'package.json', 'node_modules/**/*'],
     /* ffmpeg and the headless browser (2b), as files of their own beside the archive: they run as programs */
-    extraResources: [{ from: runtime, to: 'runtime' }],
+    extraResources: [{ from: runtime, to: 'runtime' }, { from: licenses, to: 'licenses' }],
     directories: { output: out, buildResources: join(desktop, 'build') },
     electronFuses: {
       runAsNode: true,
@@ -183,7 +201,7 @@ await builder.build({
       icon: join(desktop, 'build/icon.icns'),
       minimumSystemVersion: '13.0',
       /* the .zip the updater downloads; the .dmg has its own name (dmg.artifactName) */
-      artifactName: `${NAME.replace(' ', '-')}-\${version}-\${arch}-mac.\${ext}`,
+      artifactName: `${FILE}-\${version}-\${arch}-mac.\${ext}`,
       hardenedRuntime: true,
       gatekeeperAssess: false,
       entitlements: join(desktop, 'build/entitlements.mac.plist'),
@@ -191,7 +209,7 @@ await builder.build({
       ...(unsigned ? { identity: null } : { identity: IDENTITY, notarize: true }),
     },
     /* the downloads keep one name from version to version: the website links the latest release's by it */
-    dmg: { title: NAME, artifactName: `${NAME.replace(' ', '-')}-\${arch}.\${ext}` },
+    dmg: { title: NAME, artifactName: `${FILE}-\${arch}.\${ext}` },
   },
 });
 
@@ -200,7 +218,7 @@ if (!unsigned && !win && FEED) {
   run('/usr/bin/codesign', ['--verify', '--deep', '--strict', app]);
   run('/usr/bin/xcrun', ['stapler', 'validate', app]);
   /* 4. the download */
-  const dmg = join(out, `${NAME.replace(' ', '-')}-${arch}.dmg`);
+  const dmg = join(out, `${FILE}-${arch}.dmg`);
   run('/usr/bin/codesign', ['--sign', `Developer ID Application: ${IDENTITY}`, '--timestamp', dmg]);
   run('/usr/bin/xcrun', ['notarytool', 'submit', dmg, '--keychain-profile', NOTARY_PROFILE, '--wait']);
   run('/usr/bin/xcrun', ['stapler', 'staple', dmg]);
@@ -222,11 +240,11 @@ function adHocSign(context) {
   execFileSync('codesign', ['--force', '--deep', '--sign', '-', join(context.appOutDir, `${NAME}.app`)], { stdio: 'inherit' });
 }
 
-/** OpenFilm.exe's icon and version, as rcedit would write them. */
+/** kinocode.exe's icon and version, as rcedit would write them. */
 async function windowsResources(context) {
   const ResEdit = await import('resedit');
   const PE = await import('pe-library');
-  const file = join(context.appOutDir, `${NAME}.exe`);
+  const file = join(context.appOutDir, `${FILE}.exe`);
   const exe = PE.NtExecutable.from(readFileSync(file), { ignoreCert: true });
   const res = PE.NtExecutableResource.from(exe);
   const icon = ResEdit.Data.IconFile.from(readFileSync(join(desktop, 'build/icon.ico')));
@@ -236,8 +254,8 @@ async function windowsResources(context) {
   info.setFileVersion(major, minor, patch, 0, 1033);
   info.setProductVersion(major, minor, patch, 0, 1033);
   info.setStringValues({ lang: 1033, codepage: 1200 }, {
-    ProductName: 'OpenFilm', FileDescription: 'OpenFilm', CompanyName: 'OpenFilm', OriginalFilename: 'OpenFilm.exe',
-    InternalName: 'OpenFilm', LegalCopyright: 'Copyright © 2026 OpenFilm', FileVersion: pkg.version, ProductVersion: pkg.version,
+    ProductName: NAME, FileDescription: NAME, CompanyName: 'НЕЙРОНОВО', OriginalFilename: `${FILE}.exe`,
+    InternalName: FILE, LegalCopyright: COPYRIGHT, FileVersion: pkg.version, ProductVersion: pkg.version,
   });
   info.outputToResourceEntries(res.entries);
   res.outputResource(exe);

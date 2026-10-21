@@ -52,7 +52,7 @@ process.on('unhandledRejection', (e) => {
 });
 
 const given = process.env.OPENFILM_STUDIO_PORT;
-const port = given != null && given !== '' && Number.isInteger(Number(given)) ? Number(given) : 4747;
+const port = given != null && given !== '' && Number.isInteger(Number(given)) ? Number(given) : 4242;
 /** @type {Awaited<ReturnType<typeof startStudio>> | undefined} */
 let studio;
 let stopping = false;

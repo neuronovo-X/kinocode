@@ -65,13 +65,14 @@ const shown = (items) => items.flatMap((item) => (item.type === 'separator' || i
 
 test('the menu speaks the page\'s language, else the system\'s as Studio picks it', () => {
   assert.equal(appLanguage('zh-CN', ['en-US']), 'zh-CN');
-  assert.equal(appLanguage(null, ['en-US', 'zh-Hans-US']), 'en');
-  assert.equal(appLanguage(null, ['zh-Hans-CN', 'en-US']), 'zh-CN');
-  assert.equal(appLanguage(null, ['zh-Hant-TW', 'ja-JP']), 'ja');
+  /* КиноКод: nothing saved is Russian; an unknown saved language goes to the system's */
+  assert.equal(appLanguage(null, ['en-US', 'zh-Hans-US']), 'ru');
+  assert.equal(appLanguage(undefined, ['es-MX']), 'ru');
+  assert.equal(appLanguage(null), 'ru');
+  assert.equal(appLanguage('fr', ['zh-Hans-CN', 'en-US']), 'zh-CN');
+  assert.equal(appLanguage('fr', ['zh-Hant-TW', 'ja-JP']), 'ja');
   assert.equal(appLanguage('fr', ['ko-KR']), 'ko');
-  assert.equal(appLanguage(undefined, ['es-MX']), 'es');
-  assert.equal(appLanguage(null, ['de-DE']), 'en');
-  assert.equal(appLanguage(null), 'en');
+  assert.equal(appLanguage('fr', ['de-DE']), 'en');
   const [app, file] = build('zh-CN', 'darwin');
   assert.equal(app.label, 'OpenFilm');
   assert.equal(file.label, '文件');

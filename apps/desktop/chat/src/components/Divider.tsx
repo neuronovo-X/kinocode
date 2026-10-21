@@ -17,7 +17,7 @@ export function Divider() {
     <div
       role="separator"
       aria-orientation="vertical"
-      aria-label="Resize the chat"
+      aria-label="Изменить ширину чата"
       tabIndex={0}
       className="absolute bottom-0 left-0 top-0 z-20 w-[10px] cursor-col-resize outline-none focus-visible:bg-[var(--border-strong)]"
       onPointerDown={(event) => {

@@ -11,7 +11,7 @@ import { api } from '@/api';
 import { useLanguage, useT } from '@/i18n';
 import { RELEASES, WHATS_NEW_EVENT, compareVersions, notesToShow, releaseNotes, type NoteKind, type ReleaseNotes } from '@/lib/whats-new';
 
-const CHANGELOG = 'https://github.com/openfilm/openfilm/releases';
+const CHANGELOG = 'https://github.com/neuronovo-X/kinocode/releases';
 const KINDS: readonly NoteKind[] = ['new', 'improved', 'fixed'];
 const KIND_ICON: Record<NoteKind, React.ReactNode> = {
   new: <Sparkles size={14} aria-hidden />,
@@ -100,7 +100,7 @@ export function WhatsNew() {
             return (
               <section key={release.version} className="py-3">
                 <p className="mb-2.5 text-[12.5px] text-[var(--text-muted)]">
-                  {shown.length > 1 ? `OpenFilm ${release.version} · ` : ''}{date(release.date)}
+                  {shown.length > 1 ? `КиноКод ${release.version} · ` : ''}{date(release.date)}
                 </p>
                 <div className="flex flex-col gap-3.5">
                   {KINDS.map((kind) => {

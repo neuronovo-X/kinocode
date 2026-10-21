@@ -8,14 +8,16 @@ import { enUS } from './locales/en-US';
 import { es } from './locales/es';
 import { ja } from './locales/ja';
 import { ko } from './locales/ko';
+import { ru } from './locales/ru';
 import { zhCN } from './locales/zh-CN';
 import { lookup } from './lookup';
 
-export type UiLocale = 'en' | 'zh-CN' | 'ja' | 'ko' | 'es';
+export type UiLocale = 'en' | 'ru' | 'zh-CN' | 'ja' | 'ko' | 'es';
 
-const TABLES: Record<UiLocale, unknown> = { en: enUS, 'zh-CN': zhCN, ja, ko, es };
+const TABLES: Record<UiLocale, unknown> = { en: enUS, ru, 'zh-CN': zhCN, ja, ko, es };
 
-let language: UiLocale = 'en';
+/* КиноКод: Russian until Studio says otherwise */
+let language: UiLocale = 'ru';
 const listeners = new Set<() => void>();
 
 /** Studio's language tag, as one of the chat's. The page's own `lang` is Studio's: the chat only follows it. */
@@ -29,7 +31,7 @@ export function setLanguage(tag: string) {
 const subscribe = (on: () => void) => { listeners.add(on); return () => { listeners.delete(on); }; };
 
 export function useUiLocale(): UiLocale {
-  return React.useSyncExternalStore(subscribe, () => language, () => 'en' as UiLocale);
+  return React.useSyncExternalStore(subscribe, () => language, () => 'ru' as UiLocale);
 }
 
 /** t('project.stop'), in the language shown. */

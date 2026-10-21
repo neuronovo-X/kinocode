@@ -57,7 +57,7 @@ export const officialSkillsDir = () => process.env.OPENFILM_OFFICIAL_SKILLS || j
  */
 export const mySkillsDir = () => process.env.OPENFILM_SKILLS || join(dirname(libraryDefault()), 'Skills');
 /** Where the person's own skills were kept before: `skills/` in Studio's home. */
-export const oldSkillsDir = () => join(process.env.OPENFILM_HOME || join(homedir(), '.openfilm'), 'skills');
+export const oldSkillsDir = () => join(process.env.OPENFILM_HOME || join(homedir(), '.kinocode'), 'skills');
 
 /** A note left where the skills were, saying where they went. */
 const MOVED_NOTE = 'README.txt';

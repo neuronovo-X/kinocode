@@ -121,7 +121,7 @@ test('`openfilm open` never makes the current folder a project unasked, nor a co
   }
 });
 
-test('a newer openfilm on npm is told from what was learnt (no network when not asked), never an older one', async () => {
+test('КиноКод never tells of a newer openfilm on npm: that package is the upstream project, not a newer КиноКод', async () => {
   const { newerOpenfilm } = await import('./client.mjs');
   const home = mkdtempSync(join(tmpdir(), 'of-update-'));
   const was = process.env.OPENFILM_HOME, wasOff = process.env.OPENFILM_NO_UPDATE_CHECK;
@@ -130,7 +130,7 @@ test('a newer openfilm on npm is told from what was learnt (no network when not 
   delete process.env.OPENFILM_NO_UPDATE_CHECK;
   try {
     writeFileSync(join(home, 'update.json'), JSON.stringify({ checkedAt: Date.now(), latest: '99.0.0' }));
-    assert.equal(await newerOpenfilm({ network: false }), '99.0.0');
+    assert.equal(await newerOpenfilm({ network: false }), null);
     writeFileSync(join(home, 'update.json'), JSON.stringify({ checkedAt: Date.now(), latest: '0.0.1' }));
     assert.equal(await newerOpenfilm({ network: false }), null);
   } finally {

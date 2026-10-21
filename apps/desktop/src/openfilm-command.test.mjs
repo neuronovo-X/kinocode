@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { commandScript, commandScriptWindows } from './openfilm-command.mjs';
+import { commandScript, commandScriptWindows, installOpenfilmCommand } from './openfilm-command.mjs';
 
 test("the openfilm command alone has the app's ffmpeg first and its browser; the agent's PATH is left as it is", () => {
   const sh = commandScript('/app/node', '/app/openfilm.mjs', { ffmpeg: '/app/ffmpeg', env: { PLAYWRIGHT_BROWSERS_PATH: '/app/pw' } });
@@ -24,5 +24,15 @@ test('a script run through as-node.mjs sees itself as the script, with its argum
     const asNode = fileURLToPath(new URL('./as-node.mjs', import.meta.url));
     const out = JSON.parse(execFileSync(process.execPath, [asNode, script, '--flag', 'x'], { env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, encoding: 'utf8' }));
     assert.deepEqual(out, { argv: [script, '--flag', 'x'], runAsNode: null });
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('the app writes the command as kinocode, and as openfilm beside it, in its own folder only', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'kinocode-bin-'));
+  try {
+    const bin = installOpenfilmCommand(dir, { node: '/app/node', platform: 'win32' });
+    assert.equal(bin, join(dir, 'bin'));
+    assert.deepEqual(readdirSync(bin).sort(), ['kinocode.cmd', 'openfilm.cmd']);
+    assert.equal(readFileSync(join(bin, 'kinocode.cmd'), 'utf8'), readFileSync(join(bin, 'openfilm.cmd'), 'utf8'));
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

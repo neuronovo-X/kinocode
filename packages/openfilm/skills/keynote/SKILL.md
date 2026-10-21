@@ -22,8 +22,8 @@ proof, so the viewer leaves knowing what it is and wanting it. Surprise us; the 
 ## What you have
 
 Anything you can make pictures and motion with: the web platform and any library on it, Blender or any renderer whose
-output becomes a clip, any font whose license allows it, music and sound from `npx openfilm get`, your own built-in
-tools, and services the person has keys for. OpenFilm's own rules still hold: the picture at t depends on t alone, a
+output becomes a clip, any font whose license allows it, music and sound from `kinocode get`, your own built-in
+tools, and services the person has keys for. КиноКод's own rules still hold: the picture at t depends on t alone, a
 page has no sound, and what you render elsewhere enters as a clip under `assets/` with the script that made it. Ask
 before downloading anything large onto the person's computer.
 

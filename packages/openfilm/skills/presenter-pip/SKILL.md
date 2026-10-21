@@ -22,7 +22,7 @@ the screen the moment they say it, and they speak from a window that never gets 
 ## What you have
 
 Their recording, cut by its in and out points, never re-encoded, its window shaped with CSS; its transcript with every
-word's time (`npx openfilm get asr`), from which Studio draws the subtitles. A version you treat (its background
+word's time (`kinocode get asr`), from which Studio draws the subtitles. A version you treat (its background
 removed, its sound cleaned) is a new file under `assets/`, and the cuts stay trims of it. Their slides as pictures or
 rebuilt as pages, anything you can make charts, pictures and motion with, images and sound from `get`, your own
 built-in tools, and services the person has keys for. Ask before downloading anything large onto the person's computer.

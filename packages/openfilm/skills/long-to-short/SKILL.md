@@ -24,7 +24,7 @@ video. The speaker, watching it, would say: yes, that is what I meant.
 
 ## What you have
 
-The recording's transcript with every word's time (`npx openfilm get asr`, a WebVTT beside it), from which Studio draws
+The recording's transcript with every word's time (`kinocode get asr`, a WebVTT beside it), from which Studio draws
 the subtitles; the person sets how they look. A short is the same recording trimmed (`#t=`) and framed with CSS, never
 cut or re-encoded into new files; a page can also play the recording, silent, with its time set from t, when the
 picture has to move over it. Anything you can make titles and motion with, and your own built-in tools.

@@ -27,6 +27,6 @@ test('every app makes its projects in the person\'s one library', () => {
   for (const flavor of Object.values(FLAVORS)) {
     assert.equal(flavor.library, null);
     /* the folder the person chose for it is kept in the machine's Studio home */
-    assert.equal(flavor.sharedHome ?? join(homedir(), '.openfilm'), join(homedir(), '.openfilm'));
+    assert.equal(flavor.sharedHome ?? join(homedir(), '.kinocode'), join(homedir(), '.kinocode'));
   }
 });

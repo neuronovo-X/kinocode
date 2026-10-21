@@ -24,7 +24,7 @@ sees each step land, never waits, and could do the same in the product today.
 ## What you have
 
 The recording, cut by its in and out points and sped up with `speed`, never re-encoded; a page can also play it,
-silent, with its time set from t, so the picture can move over it. A voice from `npx openfilm get tts`, music and
+silent, with its time set from t, so the picture can move over it. A voice from `kinocode get tts`, music and
 sound from `get`, your own built-in tools, services the person has keys for, and anything you can make pictures and
 motion with.
 

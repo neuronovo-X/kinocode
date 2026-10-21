@@ -12,7 +12,7 @@ test("the app's own agent's prompt says each thing once and never tells it to go
   assert.ok(!/run\s+`openfilm`\s+with no arguments/.test(prompt), 'no telling it to print the manual it already has');
   assert.equal(count(prompt, STUDIO_REFERENCES), 1, 'how Studio is pointed at, once');
   assert.equal(count(prompt, 'Reply in the language'), 1);
-  assert.match(prompt, /Never run `openfilm open`/, 'Studio is open beside it, whatever the manual says of `open`');
+  assert.match(prompt, /Never run `kinocode open`/, 'Studio is open beside it, whatever the manual says of `open`');
 });
 
 test('every agent is told how to point at Studio', () => {

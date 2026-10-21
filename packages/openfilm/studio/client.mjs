@@ -41,7 +41,7 @@ export async function running() {
     if (said) return { ...run, version: said.version, ...(said.app ? { app: true } : {}) };
   }
   const given = Number(process.env.OPENFILM_STUDIO_PORT);
-  const origin = `http://127.0.0.1:${Number.isInteger(given) && given > 0 ? given : 4747}`;
+  const origin = `http://127.0.0.1:${Number.isInteger(given) && given > 0 ? given : 4242}`;
   const said = await health(origin);
   /* it says which home it serves as a hash of the path (the path itself is not told to anyone who asks) */
   if (said?.home !== createHash('sha256').update(studioHome()).digest('hex') || !said.filmOrigin) return null;
@@ -87,6 +87,8 @@ export function olderThanThis(/** @type {string | undefined} */ version, mine = 
  * @returns {Promise<{ latest: string | null, checkedAt: number | null }>}
  */
 export async function npmOpenfilm({ network = true, waitMs = 1500, force = false } = {}) {
+  /* КиноКод: never asked. The `openfilm` on npm is the upstream project's, not a newer КиноКод */
+  return { latest: null, checkedAt: null };
   if (process.env.OPENFILM_NO_UPDATE_CHECK) return { latest: null, checkedAt: null };
   const file = join(studioHome(), 'update.json');
   /** @type {{ checkedAt?: number, latest?: string }} */

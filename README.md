@@ -1,93 +1,75 @@
 <p align="center">
   <br>
-  <img src="docs/logo-light.svg#gh-light-mode-only" alt="OpenFilm" height="72">
-  <img src="docs/logo-dark.svg#gh-dark-mode-only" alt="OpenFilm" height="72">
+  <img src="docs/logo-light.svg#gh-light-mode-only" alt="КиноКод" height="72">
+  <img src="docs/logo-dark.svg#gh-dark-mode-only" alt="КиноКод" height="72">
 </p>
 
-<h3 align="center">The open source AI video agent.</h3>
+<h3 align="center">ИИ-агент для видео с открытым кодом.</h3>
 
-<p align="center">One HTML file, one function, one real editor.</p>
+<p align="center">Один HTML-файл, одна функция, настоящий монтажный редактор.</p>
 
-<p align="center"><b>English</b> · <a href="README.zh-CN.md">简体中文</a></p>
+<p align="center"><a href="https://нейроново.рф">нейроново.рф</a></p>
 
-## About
+<p align="center"><img src="docs/kinocode-studio.png" alt="КиноКод: превью фильма, таймлайн, инспектор и чат с агентом, тёмная тема" width="900"></p>
 
-OpenFilm lets your coding agent make videos, and lets you edit them.
+## Что это
 
-Ask Codex, Claude Code or any coding agent to make a film. It writes the film as web pages, and Studio, a local
-editor that runs in your browser, shows it taking shape. Then change anything you like, by hand or by asking.
+КиноКод даёт вашему агенту для кода снимать видео, а вам — монтировать их.
 
-- **One HTML file.** `film.html` cuts animated web pages, footage, pictures and sound together on tracks, styled
-  with CSS. Nothing new to learn: your agent already knows the web.
-- **One function.** Each shot is a web page that draws any moment with `frame(t)`, using anything a browser can
-  draw: three.js, WebGL, canvas, SVG, CSS, GSAP, video and more. No framework (like Remotion or HyperFrames): one
-  function is enough.
-- **One real editor.** Move, scale and rotate any element inside a page, change its text, color and style; place,
-  crop and restyle every clip, trim and cut them on the timeline.
+Попросите Codex, Claude Code или другого агента сделать ролик. Он пишет фильм как набор веб-страниц, а Studio —
+локальный редактор в браузере — показывает, как ролик собирается. Дальше меняйте что угодно: руками или словами.
 
-<p align="center"><img src="docs/openfilm.webp" alt="An agent makes a film with OpenFilm; it is then changed by hand in Studio" width="900"><br>
-<sub>▶ <a href="https://www.youtube.com/watch?v=Qea7v6dtNM0">Watch the 1:42 launch video</a>, made with OpenFilm from start to finish.</sub></p>
+- **Один HTML-файл.** `film.html` собирает на дорожках анимированные страницы, видео, картинки и звук, оформленные
+  через CSS. Учить ничего не надо: веб ваш агент уже знает.
+- **Одна функция.** Каждый кадр — веб-страница, которая рисует любой момент через `frame(t)` чем угодно, что умеет
+  браузер: three.js, WebGL, canvas, SVG, CSS, GSAP, видео. Никаких фреймворков: хватает одной функции.
+- **Настоящий редактор.** Двигайте, масштабируйте и вращайте любой элемент на странице, меняйте текст, цвет и стиль;
+  ставьте, кадрируйте и режьте клипы на таймлайне.
 
-## Install
+## Установка
 
-Requires Node 22.2+ and ffmpeg, on macOS, Windows or Linux (git too, for Studio's saved versions); the first run
-downloads a headless Chromium (about 100 MB).
+Скачайте установщик для Windows (`kinocode-Setup-x64.exe`) из
+[Releases](https://github.com/neuronovo-X/kinocode/releases). Это Studio с чатом для агентов, которые у вас есть.
+ffmpeg и браузер для отрисовки уже внутри, ставить больше ничего не нужно.
 
-```sh
-npx skills add openfilm/openfilm
-```
+Установщик не подписан, поэтому Windows покажет SmartScreen: «Подробнее» → «Выполнить в любом случае».
 
-Then ask your agent for a film:
+Аккаунт не нужен ни для создания, ни для монтажа, ни для рендера. Для озвучки, музыки, картинок и видео
+подключите свои сервисы (ElevenLabs, OpenAI, Google, fal и другие) своими ключами: Studio → Настройки → Провайдеры.
 
-> Make a 20-second launch video for my CLI, with music.
+Потом попросите агента:
 
-It opens the film in Studio and you watch it take shape. If your agent has no skills, tell it: "Run
-`npx -y openfilm@latest` and follow the manual it prints."
+> Сделай 20-секундный ролик о запуске моей CLI-утилиты, с музыкой.
 
-Or download the desktop app for macOS or Windows from [openfilm.dev](https://openfilm.dev) or
-[Releases](https://github.com/openfilm/openfilm/releases): Studio with a chat beside it for the agents you have. It
-comes with ffmpeg and the headless browser, so there is nothing else to install.
+## Команды
 
-Making, editing and rendering films needs no account. For generated voice, music, images and video, connect the
-services you use (ElevenLabs, OpenAI, Google, fal and others) with your own keys in Studio's Settings → Providers.
-
-To start from a finished film, open one of the [examples](https://github.com/openfilm/examples):
+Их запускает агент, но можно и самому.
 
 ```sh
-npx -y openfilm@latest open https://github.com/openfilm/examples/tree/main/one-prompt
+kinocode                          # руководство: всё, что нужно знать агенту
+kinocode open   [папка | url]     # открыть фильм в Studio: новый, существующий, с GitHub, иначе этот или последний
+kinocode look   [что] [t | a-b]   # проверить фильм, страницу или медиафайл: лист кадров, один кадр или отрезок
+kinocode render [a-b]             # MP4; --4k, --blur (размытие в движении), --alpha (.webm / .mov)
+kinocode get    [что]             # озвучка, музыка, звуки, расшифровки, картинки, видео — из ваших сервисов
+kinocode doctor                   # что есть на этом компьютере для КиноКода, чтобы приложить к отчёту об ошибке
 ```
 
-## Commands
-
-Your agent runs them; so can you, with `npx -y openfilm@latest <command>` or `npm i -g openfilm`.
-
-```sh
-openfilm                          # the manual: all an agent needs to know
-openfilm open   [folder | url]    # show a film in Studio: a new one, an existing one, one from GitHub, else this one or the last
-openfilm look   [what] [t | a-b]  # check the film, a page or a media file: a contact sheet, one frame, or a range
-openfilm render [a-b]             # the MP4; --4k, --blur (motion blur), --alpha (.webm / .mov)
-openfilm get    [what]            # voice-over, music, sound effects, transcripts, images, video, from your services
-openfilm doctor                   # what this computer has for OpenFilm, to paste into an issue
-```
-
-`openfilm <command> --help` lists a command's options; `openfilm get` alone lists what can be made and how to
-connect a service in Studio with your own key.
+`kinocode <команда> --help` покажет параметры команды.
 
 ## Studio
 
-Studio runs on your machine, in your browser: use one built on Chromium (Chrome, Edge), the engine films are drawn
-and exported with, so the preview is what you export. Everything in the film can be changed: text and layers in the
-picture, clips on the timeline, their place, look, volume and speed, and the subtitles. Your edits are saved to the
-film's files, so the agent sees and keeps them, and you can save named versions to go back to. Export a video, a GIF,
-the sound or its stems, subtitles, stills, slides, a transparent video, or the timeline itself for Final Cut Pro,
-Premiere Pro and DaVinci Resolve.
+Studio работает у вас на компьютере, в браузере на Chromium (Chrome, Edge): на этом же движке фильмы рисуются и
+экспортируются, поэтому превью совпадает с результатом. Менять можно всё: текст и слои в кадре, клипы на таймлайне,
+их место, вид, громкость и скорость, субтитры. Правки сохраняются в файлы фильма, так что агент их видит и не
+теряет, а именованные версии позволяют вернуться назад. Экспорт: видео, GIF, звук целиком или по дорожкам, субтитры,
+кадры, слайды, видео с прозрачностью или сам таймлайн для Final Cut Pro, Premiere Pro и DaVinci Resolve.
 
-The desktop app ([apps/desktop](apps/desktop)) is Studio with a chat beside it, for Claude Code, Codex and the other
-agents, or its own agent with your own key.
+Десктоп-приложение ([apps/desktop](apps/desktop)) — это Studio с чатом рядом: для Claude Code, Codex и других
+агентов или для встроенного агента с вашим ключом.
 
-## How it works
+## Как это устроено
 
-A film is a folder with a `film.html`: tracks of clips cut together.
+Фильм — это папка с `film.html`: дорожки с клипами.
 
 ```html
 <meta name="viewport" content="width=1920, height=1080">
@@ -105,65 +87,55 @@ A film is a folder with a `film.html`: tracks of clips cut together.
 </section>
 ```
 
-Each `<section>` is a track, in the order the timeline shows them: the first on top. A clip is an element: a page,
-a video, a still picture or a sound. Which part of its file plays is a media fragment (`#t=12,18`), where it starts
-is `at`, where it sits is its style's `left`, `top`, `width` and `height`, and how it looks is CSS. Every sound is a
-clip of its own. `overrides` hold your changes to elements of a page, and agents keep them when they edit.
+Каждая `<section>` — дорожка, в том порядке, в каком их показывает таймлайн: первая сверху. Клип — это элемент:
+страница, видео, картинка или звук. Какая часть файла играет, задаёт медиафрагмент (`#t=12,18`), когда клип
+начинается — `at`, где он стоит — `left`, `top`, `width` и `height` в стиле, а как выглядит — CSS. Каждый звук —
+отдельный клип. В `overrides` хранятся ваши правки элементов страницы, и агент сохраняет их при своих изменениях.
 
-A page is a web page that draws any moment of itself, and that is the whole contract:
+Страница — это веб-страница, которая умеет нарисовать любой свой момент. Вот и весь контракт:
 
 ```html
 <script type="module">
 window.film = {
-  frame(t) { /* draw the complete picture at t seconds, with anything */ },
-  duration: 4,               // optional: its own length, in seconds
-  ready: loadFonts(),        // optional: a Promise for fonts, images, models, data
-  width: 480, height: 320,   // optional: a page that is only a part of the picture
+  frame(t) { /* нарисовать полный кадр на t секунд, чем угодно */ },
+  duration: 4,               // необязательно: своя длина в секундах
+  ready: loadFonts(),        // необязательно: Promise для шрифтов, картинок, моделей, данных
+  width: 480, height: 320,   // необязательно: страница, которая занимает только часть кадра
 };
 </script>
 ```
 
-**The one rule:** the same `t` always draws the same picture, whatever was drawn before. Frames are asked for out of
-order, in parallel and between frames (for motion blur), so a page that keeps the rule renders the same at any size,
-on any machine. Anything else that makes pictures (Python, Blender, a video model) comes in as video or images.
+**Единственное правило:** одно и то же `t` всегда даёт один и тот же кадр, что бы ни рисовалось до этого. Кадры
+запрашиваются вразнобой, параллельно и между кадрами (для размытия в движении), поэтому страница, которая держит
+правило, рендерится одинаково в любом размере и на любой машине. Всё остальное, что делает картинки (Python,
+Blender, видеомодели), приходит как видео или изображения.
 
-OpenFilm spends its effort where models fail: checking the film. `look` draws every frame of its sheet twice, in two
-shuffled orders, and names any that changed, along with page errors, fonts that failed to load, missing sound files,
-and text cut off by the frame.
+Главное усилие КиноКод тратит там, где модели ошибаются, — на проверку фильма. `look` рисует каждый кадр листа
+дважды, в двух случайных порядках, и называет те, что изменились, а ещё ошибки страниц, незагрузившиеся шрифты,
+пропавшие звуки и текст, обрезанный краем кадра.
 
-[MANUAL.md](packages/openfilm/MANUAL.md) is what `openfilm` tells your agent; [SPEC.md](packages/openfilm/SPEC.md)
-is for anyone building a player, renderer or editor.
+[MANUAL.md](packages/openfilm/MANUAL.md) — то, что команда рассказывает агенту; [SPEC.md](packages/openfilm/SPEC.md)
+— для тех, кто делает плеер, рендерер или редактор.
 
-## From source
+## Сборка из исходников
 
-You need Node 22.18 or later, pnpm 9 (`corepack enable` gives you the version this repository names), ffmpeg on the
-PATH, and git.
+Нужны Node 22.18 или новее, pnpm 9 (`corepack enable` даст версию, указанную в репозитории), ffmpeg в PATH и git.
 
 ```sh
-git clone https://github.com/openfilm/openfilm && cd openfilm
+git clone https://github.com/neuronovo-X/kinocode && cd kinocode
 pnpm install
-pnpm dev            # Studio from this checkout, with a sample film, beside an installed OpenFilm
+pnpm dev            # Studio из этой копии, с примером фильма
 pnpm test
 ```
 
-Tell your coding agent to run `packages/openfilm/.dev/bin/openfilm` and it makes films with your checkout, in that
-Studio. Every OpenFilm, installed or from source, keeps its projects in the same library.
+`pnpm dev:desktop` запускает десктоп-приложение из исходников, `pnpm typecheck` и `pnpm build` делают то, что
+написано. Установщик для Windows: `pnpm --filter @openfilm/desktop release --platform=win --arch=x64`.
 
-`pnpm dev:desktop` runs the desktop app from source, and `pnpm typecheck`, `pnpm build` and `pnpm audit:public` do
-what they say.
-[CONTRIBUTING.md](CONTRIBUTING.md) has the details of each package.
+## Обратная связь
 
-## Community
+Ошибки и идеи — в [Issues](https://github.com/neuronovo-X/kinocode/issues). Приложите отчёт из настроек Studio
+(раздел для разработчиков) или вывод `kinocode doctor`.
 
-Questions, ideas and films you made go to [Discussions](https://github.com/openfilm/openfilm/discussions): ask in
-Q&A, share your film in Show and tell. Bugs go to [Issues](https://github.com/openfilm/openfilm/issues), with the
-report from Studio's Settings → Developer → Copy report (or `npx openfilm doctor`).
+## Лицензия
 
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md). To report a security issue, see [SECURITY.md](SECURITY.md).
-
-## License
-
-The format, the CLI, Studio and the desktop app are [MIT](LICENSE). The OpenFilm name and logo are trademarks: see
-[TRADEMARK.md](TRADEMARK.md).
+MIT: см. [LICENSE](LICENSE) и [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

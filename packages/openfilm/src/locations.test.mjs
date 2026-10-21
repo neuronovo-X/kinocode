@@ -41,7 +41,7 @@ test('exports go to the default: no folder kept in prefs.json moves them (the ex
 
 test('without a choice or a build\'s own: a Studio kept apart exports into its home; the person\'s own to the Desktop', () => {
   assert.equal(exportsRoot(), join(home, 'exports'));
-  assert.match(libraryRoot(), /OpenFilm[\\/]Projects$/);
+  assert.match(libraryRoot(), /КиноКод[\\/]Projects$/);
 });
 
 test('each folder for Settings: where it is, its default, whether chosen, and free space on its disk', () => {
