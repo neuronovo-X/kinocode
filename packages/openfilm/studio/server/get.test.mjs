@@ -85,7 +85,7 @@ after(() => service.close());
 const made = (verb) => listProviders().some((p) => p.verbs.includes(verb));
 /** A kind that is not connected, as the note names it: with the services that make it. */
 const unconnected = (verb) => {
-  const names = listProviders().filter((p) => p.verbs.includes(verb)).map((p) => p.name).sort((a, b) => a.localeCompare(b));
+  const names = listProviders().filter((p) => p.verbs.includes(verb)).map((p) => p.name).sort((a, b) => a.localeCompare(b, 'ru'));
   return `${verb} (${names.length > 1 ? `${names.slice(0, -1).join(', ')} or ${names.at(-1)}` : names[0]})`;
 };
 const CONNECT_ONE = `Each works only once the person connects a service that makes it. ${WHERE_TO_CONNECT}`;

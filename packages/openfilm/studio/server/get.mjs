@@ -133,7 +133,7 @@ export const WHERE_TO_CONNECT = 'In Studio, the OpenFilm logo at the top left op
   + 'with the person\'s own key, then choose the model for each kind of media under Services.';
 /** The services that make `verb`, by name: "fal.ai, Google or OpenAI". @param {string} verb */
 const makers = (verb) => {
-  const names = listProviders().filter((p) => /** @type {readonly string[]} */ (p.verbs).includes(verb)).map((p) => p.name).sort((a, b) => a.localeCompare(b));
+  const names = listProviders().filter((p) => /** @type {readonly string[]} */ (p.verbs).includes(verb)).map((p) => p.name).sort((a, b) => a.localeCompare(b, 'ru'));
   return names.length > 1 ? `${names.slice(0, -1).join(', ')} or ${names.at(-1)}` : names[0] ?? 'no service here makes it yet';
 };
 /** What is not connected here, which services make each, and where the person connects one. @param {string[]} verbs */
@@ -158,7 +158,7 @@ const WORDS = /** @type {Record<string, string>} */ ({
 /** The media services `get` can use, by name (none comes first), what each makes, and where the person connects them. */
 export const services = () => `Media services, each used with the person's own key: ${listProviders()
   .map((p) => ({ name: p.name, makes: p.verbs.filter((v) => WORDS[v]).map((v) => WORDS[v]).join(', ') }))
-  .sort((a, b) => a.name.localeCompare(b.name)).map((p) => `${p.name} (${p.makes})`).join(', ')}. ${WHERE_TO_CONNECT}`;
+  .sort((a, b) => a.name.localeCompare(b.name, 'ru')).map((p) => `${p.name} (${p.makes})`).join(', ')}. ${WHERE_TO_CONNECT}`;
 
 /** How long the person has to answer a question about spending. */
 const ASK_WAIT_MS = 15 * 60_000;
