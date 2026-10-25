@@ -464,7 +464,7 @@ export function filmSubtitleWords(cue, timeMs) {
   const words = cue.words;
   if (words?.length) {
     words.forEach((w, i) => {
-      if (i > 0 && !PUNCT_START.test(w.text) && /[A-Za-z0-9]$/.test(words[i - 1].text)) out.push({ text: ' ', active: false });
+      if (i > 0 && !PUNCT_START.test(w.text) && /[A-Za-z0-9À-ɏͰ-ϿЀ-ӿ]$/.test(words[i - 1].text)) out.push({ text: ' ', active: false });
       out.push({ text: w.text, active: timeMs >= w.startMs && timeMs < w.startMs + w.durMs });
     });
     return out;
