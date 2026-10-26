@@ -5,8 +5,9 @@
 // frame every quarter second, all but lossless (with its alpha, when it has one), made once and kept in the project's
 // cache; the render's pages are served the copy, and the sound is still mixed from the original.
 import { execFile } from 'node:child_process';
-import { existsSync, readFileSync, renameSync, rmSync, statSync } from 'node:fs';
-import { extname, join, relative, sep } from 'node:path';
+import { existsSync, readdirSync, readFileSync, renameSync, rmSync, statSync } from 'node:fs';
+import { statfs } from 'node:fs/promises';
+import { dirname, extname, join, relative, sep } from 'node:path';
 import { colorTagsOf, encoders, h264ColorTags, hardwareEncoder, hardwareOptions, onTheChip } from './encoders.mjs';
 import { kindOf, readFilmFile, srcHref } from './film-doc.mjs';
 import { ffmpeg, fileOf, hash, outDir } from './shared.mjs';
@@ -15,8 +16,18 @@ import { ffmpeg, fileOf, hash, outDir } from './shared.mjs';
 const SLOW_GOP_S = 0.5;
 /** The copy's key frames: four a second. */
 const COPY_GOP_S = 0.25;
-/** A longer video is left as it is: copying it all could take longer than the render it would speed up. */
-const MAX_SECONDS = 10 * 60;
+/** A longer video is left as it is: copying it all could take longer than the render it would speed up. The graphics
+    chip makes a copy in a tenth of the video's length or less, the processor several times slower. */
+const MAX_SECONDS_CHIP = 60 * 60;
+const MAX_SECONDS_CPU = 10 * 60;
+/** A copy bigger than this is not made, nor one the disk has no room for (the copy plus this much to spare). */
+const MAX_COPY_BYTES = 8e9;
+const DISK_SPARE_BYTES = 2e9;
+/** A copy's bit rate: all but lossless for the picture, but not far beyond what the source itself carries. */
+const COPY_BITS_PER_PIXEL = 0.3;
+const COPY_OVER_SOURCE = 4;
+/** An unfinished copy (a render cancelled or killed) left this long is garbage. */
+const STALE_PART_MS = 24 * 3600e3;
 /** Bigger than this is left as it is (H.264 stops at 4096 on a side in most decoders). */
 const MAX_SIDE = 4096;
 /** Changing how copies are made makes new ones. */
@@ -28,19 +39,30 @@ const probe = (file, args) => new Promise((done, fail) => {
 });
 
 /**
- * What a copy of `file` would be made from: its first video stream, when it is one worth copying (8-bit 4:2:0, no
- * alpha, not too big or long, key frames far apart). Null when it is better left alone.
- * @param {string} file
+ * How long a video may be and still get a copy: a chip makes it quickly, the processor not; OPENFILM_SEEK_MAX_MINUTES
+ * says otherwise (0: no video of any length gets one).
+ * @param {boolean} chip
  */
-export async function slowSeeking(file) {
+const maxSeconds = (chip) => {
+  const minutes = process.env.OPENFILM_SEEK_MAX_MINUTES;
+  return minutes !== undefined && minutes !== '' && Number(minutes) >= 0 ? Number(minutes) * 60 : chip ? MAX_SECONDS_CHIP : MAX_SECONDS_CPU;
+};
+
+/**
+ * What a copy of `file` would be made from: its first video stream, when it is one worth copying (8-bit 4:2:0, no
+ * alpha, not too big or long, key frames far apart). Null when it is better left alone. `chip`: a graphics chip makes
+ * the copy, so a longer video is worth it.
+ * @param {string} file @param {{ chip?: boolean }} [options]
+ */
+export async function slowSeeking(file, { chip = false } = {}) {
   let info;
   try {
-    info = JSON.parse(await probe(file, ['-select_streams', 'v:0', '-show_entries', 'stream=width,height,pix_fmt,avg_frame_rate:format=duration', '-of', 'json']));
+    info = JSON.parse(await probe(file, ['-select_streams', 'v:0', '-show_entries', 'stream=width,height,pix_fmt,avg_frame_rate:format=duration,bit_rate', '-of', 'json']));
   } catch { return null; }
   const stream = info.streams?.[0];
   const seconds = Number(info.format?.duration);
   if (!stream || !['yuv420p', 'yuvj420p'].includes(stream.pix_fmt)) return null;
-  if (!(seconds > 0) || seconds > MAX_SECONDS || stream.width > MAX_SIDE || stream.height > MAX_SIDE) return null;
+  if (!(seconds > 0) || seconds > maxSeconds(chip) || stream.width > MAX_SIDE || stream.height > MAX_SIDE) return null;
   const [n, d] = String(stream.avg_frame_rate).split('/').map(Number);
   const fps = n > 0 && d > 0 ? n / d : 30;
   /* the key frames among the packets of its first 20 s (read, not decoded) */
@@ -59,7 +81,7 @@ export async function slowSeeking(file) {
     span = first == null || last == null ? 0 : last - first;
   } catch { return null; }
   if (keys === 0 || span <= 0) return null;
-  return span / keys > SLOW_GOP_S ? { fps, seconds, w: Number(stream.width), h: Number(stream.height) } : null;
+  return span / keys > SLOW_GOP_S ? { fps, seconds, bps: Number(info.format?.bit_rate) || 0, w: Number(stream.width), h: Number(stream.height) } : null;
 }
 
 /** Every Chromium decodes these by itself, with its own decoders, on any machine: no need to ask it. */
@@ -70,11 +92,11 @@ const decodedAnywhere = (/** @type {{ codec_name?: string, pix_fmt?: string }} *
  * What a render needs of a video: a copy because its browser does not decode it here (`unplayable`: ProRes in any
  * browser, HEVC without a chip for it, 10-bit H.264…, asked of the browser itself with `plays`; `alpha` when its
  * picture has one to keep), or because it seeks slowly (`slow`, slowSeeking, only when `slow` is asked for); null for
- * neither.
- * @param {string} file @param {{ plays?: (file: string) => Promise<boolean>, slow?: boolean }} [options]
- * @returns {Promise<{ why: 'unplayable' | 'slow', fps: number, w: number, h: number, alpha: boolean } | null>}
+ * neither. `chip`: a graphics chip makes the copy (slowSeeking). A slow one also says its length and its source's bit rate.
+ * @param {string} file @param {{ plays?: (file: string) => Promise<boolean>, slow?: boolean, chip?: boolean }} [options]
+ * @returns {Promise<{ why: 'unplayable' | 'slow', fps: number, w: number, h: number, alpha: boolean, seconds?: number, bps?: number } | null>}
  */
-export async function copyNeed(file, { plays, slow = true } = {}) {
+export async function copyNeed(file, { plays, slow = true, chip = false } = {}) {
   let info;
   try {
     info = JSON.parse(await probe(file, ['-select_streams', 'v:0', '-show_entries', 'stream=codec_name,width,height,pix_fmt,avg_frame_rate:stream_tags=alpha_mode', '-of', 'json']));
@@ -86,8 +108,8 @@ export async function copyNeed(file, { plays, slow = true } = {}) {
     const alpha = /^(yuva|rgba|bgra|argb|abgr|gbrap|ya)/.test(String(stream.pix_fmt)) || stream.tags?.alpha_mode === '1';
     return { why: 'unplayable', fps: n > 0 && d > 0 ? n / d : 30, w: Number(stream.width), h: Number(stream.height), alpha };
   }
-  const slowly = slow ? await slowSeeking(file) : null;
-  return slowly ? { why: 'slow', fps: slowly.fps, w: slowly.w, h: slowly.h, alpha: false } : null;
+  const slowly = slow ? await slowSeeking(file, { chip }) : null;
+  return slowly ? { why: 'slow', fps: slowly.fps, w: slowly.w, h: slowly.h, alpha: false, seconds: slowly.seconds, bps: slowly.bps } : null;
 }
 
 /** Where `file`'s copy is kept in `root`'s cache, by the file's version: the path without its extension. */
@@ -173,6 +195,35 @@ export async function browserCopies(browser, origin, root, files, { signal, slow
 }
 
 /**
+ * The bit rate of a video's copy: all but lossless for its picture, yet no more than a few times what the source itself
+ * carries (a copy of a 2.5 Mbps download at 19 Mbps would only be bigger).
+ * @param {{ w: number, h: number, fps: number, bps?: number }} need
+ */
+export function copyBits(need) {
+  const bits = Math.min(120e6, Math.max(4e6, ((need.w * need.h) || 1920 * 1080) * need.fps * COPY_BITS_PER_PIXEL));
+  return need.bps ? Math.min(bits, Math.max(4e6, need.bps * COPY_OVER_SOURCE)) : bits;
+}
+
+/** Whether the disk of `dir` has room for `bytes` and some to spare; true when it cannot tell. */
+const roomFor = async (/** @type {string} */ dir, /** @type {number} */ bytes) => {
+  try {
+    const disk = await statfs(dir);
+    return Number(disk.bavail) * Number(disk.bsize) > bytes + DISK_SPARE_BYTES;
+  } catch { return true; }
+};
+
+/** Takes out the unfinished copies a cancelled or killed render left (a finished one is renamed away from `.part`). */
+const sweepParts = (/** @type {string} */ dir) => {
+  try {
+    for (const name of readdirSync(dir)) {
+      if (!name.includes('.part.')) continue;
+      const file = join(dir, name);
+      if (Date.now() - statSync(file).mtimeMs > STALE_PART_MS) rmSync(file, { force: true });
+    }
+  } catch { /* nothing to sweep */ }
+};
+
+/**
  * The copy of each of `files` that needs one (copyNeed), made in `root`'s cache (or found there from before): a map
  * from a file to its copy. A file that is fine as it is, or whose copy fails, is not in it. `plays`: whether the
  * render's browser decodes a file; `slow`: whether slow-seeking ones get a copy too (a render of more than a moment).
@@ -181,7 +232,9 @@ export async function browserCopies(browser, origin, root, files, { signal, slow
  */
 export async function seekableCopies(files, root, { signal, plays, slow = true } = {}) {
   const copies = new Map();
-  outDir(root, 'seek');
+  sweepParts(outDir(root, 'seek'));
+  /* a chip that makes the copies makes a longer video's worth the wait */
+  const chip = await (async () => { try { return !!(await hardwareEncoder('h264', await encoders())); } catch { return false; } })();
   /* two at a time: on the processor each one keeps several cores busy; on the graphics chip it leaves them free */
   const queue = [...new Set(files)];
   const worker = async () => {
@@ -194,15 +247,19 @@ export async function seekableCopies(files, root, { signal, plays, slow = true }
       const known = (/** @type {string} */ copy) => { copies.set(file, copy); found.set(`${root}\0${file}\0${stat.size}\0${stat.mtimeMs}`, { copy, at: Date.now() }); };
       const made = [`${base}.mp4`, `${base}.webm`].find((f) => existsSync(f));
       if (made) { known(made); continue; }
-      const need = await copyNeed(file, { plays, slow });
+      const need = await copyNeed(file, { plays, slow, chip });
       if (!need) continue;
       /* with an alpha to keep: VP9, which every Chromium decodes with its alpha; else H.264 */
       const out = `${base}${need.alpha ? '.webm' : '.mp4'}`;
       const gop = Math.max(1, Math.round(need.fps * COPY_GOP_S));
       const part = `${out}.part${extname(out)}`;
-      /* all but lossless: about 19 Mbps at 1080p and 30 fps; the chip's encoder keeps the source's color tags only
-         when told them */
-      const bits = Math.min(120e6, Math.max(4e6, ((need.w * need.h) || 1920 * 1080) * need.fps * 0.3));
+      /* all but lossless: about 19 Mbps at 1080p and 30 fps, less for a source with less to keep; the chip's encoder
+         keeps the source's color tags only when told them */
+      const bits = copyBits(need);
+      /* a long video's copy is big: not made when it is more than this allows or the disk has no room (the film then
+         seeks in the original, slower but the same picture) */
+      const size = need.seconds ? bits * need.seconds / 8 : 0;
+      if (size > MAX_COPY_BYTES || (size && !(await roomFor(dirname(out), size)))) continue;
       /* decoded and written on the graphics chip when it can (encoders.mjs), else on the processor */
       const make = async (/** @type {string | null} */ encoder, /** @type {string[]} */ decoding) => {
         /* the same frames at the same times (passthrough: no frame is added or dropped), the picture only */

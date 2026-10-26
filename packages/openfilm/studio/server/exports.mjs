@@ -1319,7 +1319,8 @@ export function createExports({ onChange = () => {}, captions = subtitlesForExpo
     running = true;
     const { root, folder, abort, twin } = /** @type {{ root: string, folder: string, abort: AbortController, twin?: string }} */ (work.get(job.id));
     try {
-      await mkdir(folder, { recursive: true });
+      /* made only when it is not there: on Windows, mkdir of a disk's root (D:\) fails with EPERM though it exists */
+      if (!existsSync(folder)) await mkdir(folder, { recursive: true });
       update(job, { status: 'running', phase: 'preparing', startedAt: Date.now() });
       const kind = job.ask.kind;
       /* the same export as one made just before it (asked together), but for its name: that one's files, cloned */

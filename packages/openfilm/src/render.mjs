@@ -1,7 +1,7 @@
 // film render: the deliverable. Frames are rendered in parallel page instances, averaged
 // over the shutter for motion blur, encoded with tagged BT.709 color, and muxed with the mix of the film's sounds.
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { availableParallelism, freemem, totalmem } from 'node:os';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import { clipKind, FILM_FILE } from './film-doc.mjs';
@@ -101,7 +101,8 @@ export async function render(args, opts = {}) {
   const out = resolve(opts.out ?? (range
     ? join(outDir(dir, 'render'), `${name}-${from}-${to}${alpha ? '.webm' : '.mp4'}`)
     : join(dir, `${name}${alpha ? '.webm' : '.mp4'}`)));
-  mkdirSync(dirname(out), { recursive: true });
+  /* made only when it is not there: on Windows, mkdir of a disk's root (D:\) fails with EPERM though it exists */
+  if (!existsSync(dirname(out))) mkdirSync(dirname(out), { recursive: true });
   const container = FORMATS[extname(out).toLowerCase()];
   if (!container) { await probe.close(); throw new UsageError(`can't write ${extname(out)}: use .mp4, .webm or .mov`); }
   if (alpha && extname(out).toLowerCase() === '.mp4') { await probe.close(); throw new UsageError('mp4 has no transparency: write .webm or .mov with --alpha'); }

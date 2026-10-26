@@ -1,12 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { filmHtml } from './film-doc.mjs';
 import { render } from './render.mjs';
-import { copyNeed, madeCopy, seekableCopies, slowSeeking } from './seekable.mjs';
+import { copyBits, copyNeed, madeCopy, seekableCopies, slowSeeking } from './seekable.mjs';
 import { look } from './look.mjs';
 
 const hasFfmpeg = (() => { try { execFileSync('ffmpeg', ['-version'], { stdio: 'ignore' }); return true; } catch { return false; } })();
@@ -33,6 +33,48 @@ test('a video with key frames far apart gets a copy with the same frames at the 
     /* kept: the next render finds it */
     const again = await seekableCopies([join(dir, 'slow.mp4')], dir);
     assert.equal(again.get(join(dir, 'slow.mp4')), copy);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('a copy\'s bit rate follows the source\'s, and how long a video may be is the chip\'s to widen and the person\'s to set', ffmpeg, async () => {
+  assert.equal(copyBits({ w: 1920, h: 1080, fps: 30 }), 1920 * 1080 * 30 * 0.3, 'the source\'s rate unknown: by the picture');
+  assert.equal(copyBits({ w: 1920, h: 1080, fps: 30, bps: 2.5e6 }), 1e7, 'a 2.5 Mbps download: four times its own');
+  assert.equal(copyBits({ w: 1920, h: 1080, fps: 30, bps: 100e6 }), 1920 * 1080 * 30 * 0.3, 'a rich source: by the picture');
+  assert.equal(copyBits({ w: 320, h: 180, fps: 30, bps: 5e5 }), 4e6, 'never under the floor');
+  const dir = mkdtempSync(join(tmpdir(), 'of-seekable-long-'));
+  const kept = process.env.OPENFILM_SEEK_MAX_MINUTES;
+  try {
+    clip(join(dir, 'slow.mp4'), 120);
+    const file = join(dir, 'slow.mp4');
+    const slow = await slowSeeking(file);
+    assert.ok(slow && slow.seconds > 3 && slow.bps > 0, 'its length and its source\'s bit rate are told');
+    assert.equal((await copyNeed(file, { chip: true }))?.seconds, slow.seconds);
+    process.env.OPENFILM_SEEK_MAX_MINUTES = '0.01';
+    assert.equal(await slowSeeking(file), null, 'longer than the person allows');
+    assert.equal(await slowSeeking(file, { chip: true }), null, 'a chip does not outvote the person');
+    process.env.OPENFILM_SEEK_MAX_MINUTES = '0';
+    assert.equal(await slowSeeking(file), null, '0: none gets a copy');
+    process.env.OPENFILM_SEEK_MAX_MINUTES = '';
+    assert.ok(await slowSeeking(file), 'empty: as if not set');
+  } finally {
+    if (kept === undefined) delete process.env.OPENFILM_SEEK_MAX_MINUTES; else process.env.OPENFILM_SEEK_MAX_MINUTES = kept;
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('an unfinished copy left long ago is swept; a fresh one, another render\'s, is not', ffmpeg, async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'of-seekable-sweep-'));
+  try {
+    const seek = join(dir, '.film', 'cache', 'seek');
+    mkdirSync(seek, { recursive: true });
+    const old = join(seek, 'aaaa.mp4.part.mp4'), fresh = join(seek, 'bbbb.mp4.part.mp4'), done = join(seek, 'cccc.mp4');
+    for (const f of [old, fresh, done]) writeFileSync(f, 'x');
+    const day = new Date(Date.now() - 25 * 3600e3);
+    utimesSync(old, day, day); utimesSync(done, day, day);
+    await seekableCopies([], dir);
+    assert.deepEqual(readdirSync(seek).sort(), ['bbbb.mp4.part.mp4', 'cccc.mp4']);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

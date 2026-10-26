@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
-import { cancelled, filePickerCommand, folderPickerCommand, startFolder } from './folder-picker.mjs';
+import { cancelled, filePickerCommand, folderPath, folderPickerCommand, startFolder } from './folder-picker.mjs';
 
 test('macOS: the words and the folder are arguments of the script, never inside it', () => {
   const c = folderPickerCommand('darwin', { title: 'Save "here" end tell', at: '/Volumes/Films' });
@@ -20,6 +20,26 @@ test('Windows: PowerShell reads the words from its environment', () => {
   assert.equal(c.cmd, 'powershell.exe');
   assert.equal(c.env.OPENFILM_PICK_TITLE, "it's mine");
   assert.ok(!c.args.join(' ').includes("it's mine"));
+  assert.ok(!c.script.includes("it's mine"));
+});
+
+test('Windows: the script goes to PowerShell encoded, and opens the Explorer folder dialog in front, the old one only as a fallback', () => {
+  const c = folderPickerCommand('win32', { title: 'T', at: 'D:\Films' });
+  assert.equal(c.args.at(-2), '-EncodedCommand');
+  assert.equal(Buffer.from(c.args.at(-1), 'base64').toString('utf16le'), c.script);
+  assert.match(c.script, /IFileOpenDialog/);
+  assert.match(c.script, /TopMost = \$true/);
+  assert.match(c.script, /\$w\.Show\(\)/, 'the owner is shown, or the dialog opens behind the browser');
+  assert.ok(c.script.indexOf('OpenFilmFolder') < c.script.indexOf('FolderBrowserDialog'));
+});
+
+test('Windows: the scripts are valid PowerShell', { skip: process.platform !== 'win32', timeout: 30_000 }, () => {
+  for (const c of [folderPickerCommand('win32', { title: 'T' }), filePickerCommand('win32', { title: 'T' })]) {
+    const out = execFileSync(c.cmd, ['-NoProfile', '-Command', '$e = $null; [void][System.Management.Automation.Language.Parser]::ParseInput($env:OPENFILM_TEST_SCRIPT, [ref]$null, [ref]$e); $e.Count'], {
+      env: { ...process.env, OPENFILM_TEST_SCRIPT: c.script }, encoding: 'utf8', windowsHide: true, timeout: 20_000,
+    });
+    assert.equal(out.trim(), '0', 'no syntax error');
+  }
 });
 
 test('Linux: zenity, else kdialog, else none', () => {
@@ -35,7 +55,7 @@ test('files: several at once, a path a line; the words are arguments, never insi
   assert.ok(mac.args.filter((a, i) => mac.args[i - 1] === '-e').every((line) => !line.includes('media')));
   const win = filePickerCommand('win32', { title: "it's mine" });
   assert.equal(win.env.OPENFILM_PICK_TITLE, "it's mine");
-  assert.match(win.args.at(-1), /Multiselect = \$true/);
+  assert.match(win.script, /Multiselect = \$true/);
   assert.ok(filePickerCommand('linux', { title: 'T' }, (n) => n === 'zenity').args.includes('--multiple'));
   assert.equal(filePickerCommand('linux', { title: 'T' }, () => false), null);
 });
@@ -78,11 +98,20 @@ for (const [kind, picker] of [['folder', folderPickerCommand], ['files', filePic
     const expected = kind === 'folder' ? paths[0] : paths.join('\n');
     const command = picker('win32', { title: 'Choose' });
     // Run the command's output setup without opening an interactive dialog. The chosen paths come from the environment.
-    const script = command.args.at(-1).replace(/Add-Type[\s\S]*$/, '[Console]::Out.Write($env:OPENFILM_PICK_TEST_PATHS)');
-    const stdout = execFileSync(command.cmd, [...command.args.slice(0, -1), script], {
+    const script = command.script.replace(/Add-Type[\s\S]*$/, '[Console]::Out.Write($env:OPENFILM_PICK_TEST_PATHS)');
+    const stdout = execFileSync(command.cmd, ['-NoProfile', '-STA', '-Command', script], {
       env: { ...process.env, ...command.env, OPENFILM_PICK_TEST_PATHS: expected },
       encoding: 'utf8', windowsHide: true, timeout: 10_000,
     });
     assert.equal(stdout, expected);
   });
 }
+
+test('a folder path loses the slash at its end, but a disk root keeps it: D: is no full path', () => {
+  assert.equal(folderPath('D:\\Films\\\n'), 'D:\\Films');
+  assert.equal(folderPath('D:\\'), 'D:\\');
+  assert.equal(folderPath('d:/'), 'd:\\');
+  assert.equal(folderPath('/'), '/');
+  assert.equal(folderPath('/Volumes/Films/'), '/Volumes/Films');
+  assert.equal(folderPath('  \n'), '');
+});
