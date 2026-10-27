@@ -84,8 +84,8 @@ export { exportsRoot };
  * @typedef {'standard' | 'high' | 'master'} Quality
  * @typedef {{ frame?: FrameId, fill?: 'contain' | 'cover', burnSubtitles?: boolean }} Framing
  * @typedef {Framing & { kind: 'video', codec?: VideoCodec, shortEdge?: number, scale?: number,
- *   fps?: number, quality?: Quality, audio?: boolean, clip?: string, preset?: string, sidecar?: 'srt' | 'vtt', hardware?: boolean }} VideoAsk
- * @typedef {Framing & { kind: 'gif', width?: number, fps?: number }} GifAsk
+ *   fps?: number, quality?: Quality, audio?: boolean, clip?: string, preset?: string, sidecar?: 'srt' | 'vtt', hardware?: boolean, workers?: number }} VideoAsk
+ * @typedef {Framing & { kind: 'gif', width?: number, fps?: number, workers?: number }} GifAsk
  * @typedef {{ kind: 'audio', format?: 'wav' | 'm4a' | 'mp3', mix?: boolean, stems?: boolean }} AudioAsk
  * @typedef {Framing & { kind: 'stills', format?: 'png' | 'jpg', shortEdge?: number, at?: number[] }} StillsAsk
  * @typedef {Framing & { kind: 'poster', format?: 'png' | 'jpg', shortEdge?: number, at?: number }} PosterAsk
@@ -272,10 +272,12 @@ function checked(/** @type {ExportAsk} */ ask) {
       if (ask.clip !== undefined && (typeof ask.clip !== 'string' || !ask.clip || ask.clip.length > 200)) throw new ExportError(`clip: a clip id of ${FILM_FILE}`);
       if (ask.preset !== undefined && (typeof ask.preset !== 'string' || ask.preset.length > 60)) throw new ExportError('preset: a name, at most 60 characters');
       if (ask.sidecar !== undefined && ask.sidecar !== 'srt' && ask.sidecar !== 'vtt') throw new ExportError('sidecar: srt or vtt');
+      if (ask.workers !== undefined && !between(ask.workers, 1, 32)) throw new ExportError('workers: 1 to 32');
       break;
     case 'gif':
       if (!between(ask.width, 64, 1920)) throw new ExportError('width: 64 to 1920 pixels');
       if (!between(ask.fps, 1, 50)) throw new ExportError('fps: 1 to 50');
+      if (ask.workers !== undefined && !between(ask.workers, 1, 32)) throw new ExportError('workers: 1 to 32');
       break;
     case 'audio':
       if (ask.format !== undefined && !(ask.format in SOUND_CODECS)) throw new ExportError('sound as wav, m4a or mp3');
@@ -797,7 +799,7 @@ export function createExports({ onChange = () => {}, captions = subtitlesForExpo
       const how = (chip) => {
         const { encoder, format } = encoding(codec, quality, size, fps ?? 30, have, chip);
         const container = /** @type {{ pix?: string }} */ (format).pix ?? (codec === 'h264' || codec === 'hevc' ? `${TO_709},format=yuv420p` : codec === 'vp9' ? 'format=yuva420p' : 'format=yuva444p10le');
-        return { encoder, opts: { fps, scale: place.scale, alpha, silent: ask.audio === false || codec === 'png', format: { ...format, pix: `${place.vf},${container}` }, ...(clip || burn ? { root } : {}) } };
+        return { encoder, opts: { fps, scale: place.scale, alpha, silent: ask.audio === false || codec === 'png', format: { ...format, pix: `${place.vf},${container}` }, ...(clip || burn ? { root } : {}), ...(ask.workers ? { workers: ask.workers } : {}) } };
       };
       let { encoder, opts } = how(hw);
       update(job, { encoder });
@@ -863,7 +865,7 @@ export function createExports({ onChange = () => {}, captions = subtitlesForExpo
       const movie = join(scratch, 'gif.mp4');
       update(job, { encoder: 'gif' });
       /* near-lossless picture to make the palette from */
-      await renderTo(job, burn ? burn.dir : root, movie, { fps, scale: place.scale, silent: true, ...(burn ? { root } : {}),
+      await renderTo(job, burn ? burn.dir : root, movie, { fps, scale: place.scale, silent: true, ...(burn ? { root } : {}), ...(ask.workers ? { workers: ask.workers } : {}),
         format: { video: ['-c:v', 'libx264', '-preset', 'veryfast', '-crf', '8', ...BT709], pix: `${place.vf},${TO_709},format=yuv420p` } }, signal, 0.8);
       const out = freeFile(dir, baseName(job.name, ask), '.gif');
       update(job, { phase: 'encoding', progress: 0.85, out, outputs: [out] });

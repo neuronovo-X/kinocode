@@ -94,6 +94,8 @@ interface Settings {
   socialQuality: ExportQuality;
   /** Burned-in subtitles on platform exports: each platform's habit, all, or none. */
   socialSubs: 'auto' | 'on' | 'off';
+  /** Number of parallel browser workers (0 for auto). */
+  workers: number;
   video: {
     codec: ExportVideoCodec;
     shortEdge: number;
@@ -127,6 +129,7 @@ const DEFAULTS: Settings = {
   presets: ['youtube'],
   socialQuality: 'high',
   socialSubs: 'auto',
+  workers: 0,
   video: {
     codec: 'h264', shortEdge: 1080, fps: 'source', quality: 'high', frame: 'current', fill: 'contain', audio: true, burn: true, sidecar: 'none',
   },
@@ -397,24 +400,28 @@ export function ExportCenter(props: ExportCenterProps) {
         return s.presets.map((id) => presets.find((p) => p.id === id) ?? null).filter((p) => p !== null).map((p) => ({
           kind: 'video', codec: 'h264', frame: p.frame, fill: 'contain', shortEdge: p.shortEdge, fps: presetFps(p, projectFps),
           quality: s.socialQuality, audio: true, preset: p.name, label: p.name,
-          ...burn(s.socialSubs === 'auto' ? p.burnSubtitles : s.socialSubs === 'on'), ...ranged,
+          ...burn(s.socialSubs === 'auto' ? p.burnSubtitles : s.socialSubs === 'on'),
+          ...(s.workers > 0 ? { workers: s.workers } : {}),
+          ...ranged,
         }));
       case 'video': {
         const v = s.video;
         return [{
           kind: 'video', codec: videoCodec, frame: resolveFrame(v.frame), fill: v.fill, shortEdge: v.shortEdge, fps: fpsFor(v.fps),
           quality: v.quality, audio: v.audio, label: codecName(videoCodec), ...burn(v.burn),
-          ...(captions > 0 && v.sidecar !== 'none' && videoCodec !== 'png' ? { sidecar: v.sidecar } : {}), ...ranged,
+          ...(captions > 0 && v.sidecar !== 'none' && videoCodec !== 'png' ? { sidecar: v.sidecar } : {}),
+          ...(s.workers > 0 ? { workers: s.workers } : {}),
+          ...ranged,
         }];
       }
       case 'alpha': {
         const a = s.alpha;
         return alphaBlock
-          ? [{ kind: 'video', codec: alphaCodec, clip: alphaBlock.clipId, scale: a.scale, fps: a.fps, quality: 'high', audio: a.audio, label: alphaBlock.label }]
-          : [{ kind: 'video', codec: alphaCodec, frame: 'native', shortEdge: a.shortEdge, fps: a.fps, quality: 'high', audio: a.audio, label: codecName(alphaCodec), ...ranged }];
+          ? [{ kind: 'video', codec: alphaCodec, clip: alphaBlock.clipId, scale: a.scale, fps: a.fps, quality: 'high', audio: a.audio, label: alphaBlock.label, ...(s.workers > 0 ? { workers: s.workers } : {}) }]
+          : [{ kind: 'video', codec: alphaCodec, frame: 'native', shortEdge: a.shortEdge, fps: a.fps, quality: 'high', audio: a.audio, label: codecName(alphaCodec), ...(s.workers > 0 ? { workers: s.workers } : {}), ...ranged }];
       }
       case 'gif':
-        return [{ kind: 'gif', frame: resolveFrame(s.gif.frame), fill: s.gif.fill, width: s.gif.width, fps: s.gif.fps, label: 'GIF', ...burn(s.gif.burn), ...ranged }];
+        return [{ kind: 'gif', frame: resolveFrame(s.gif.frame), fill: s.gif.fill, width: s.gif.width, fps: s.gif.fps, label: 'GIF', ...burn(s.gif.burn), ...(s.workers > 0 ? { workers: s.workers } : {}), ...ranged }];
       case 'audio': {
         const stems = s.audio.stems;
         return [{ kind: 'audio', format: audioFormat, stems, mix: stems ? s.audio.mix : true, label: t(stems ? 'exportCenter.audioStems' : 'exportCenter.audioMix'), ...ranged }];
@@ -691,6 +698,20 @@ export function ExportCenter(props: ExportCenterProps) {
                       </Field>
                     )}
                   </div>
+                  <Field label={t('exportCenter.workers')}>
+                    <Chips
+                      value={s.workers}
+                      options={[
+                        { value: 0, label: t('exportCenter.workersAuto') },
+                        { value: 2, label: '2' },
+                        { value: 4, label: '4' },
+                        { value: 6, label: '6' },
+                        { value: 8, label: '8' },
+                      ]}
+                      onChange={(workers) => patch('workers', workers)}
+                    />
+                  </Field>
+                  <Hint>{t('exportCenter.workersHint')}</Hint>
                   <Hint>{t('exportCenter.socialHint')}</Hint>
                 </>
               )}
@@ -749,6 +770,20 @@ export function ExportCenter(props: ExportCenterProps) {
                       </Field>
                     )}
                   </div>
+                  <Field label={t('exportCenter.workers')}>
+                    <Chips
+                      value={s.workers}
+                      options={[
+                        { value: 0, label: t('exportCenter.workersAuto') },
+                        { value: 2, label: '2' },
+                        { value: 4, label: '4' },
+                        { value: 6, label: '6' },
+                        { value: 8, label: '8' },
+                      ]}
+                      onChange={(workers) => patch('workers', workers)}
+                    />
+                  </Field>
+                  <Hint>{t('exportCenter.workersHint')}</Hint>
                   {videoCodec !== 'png' && (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <Field label={t('exportCenter.audio')}>
@@ -846,6 +881,19 @@ export function ExportCenter(props: ExportCenterProps) {
                   {alphaCodec !== 'png' && (
                     <Toggle checked={s.alpha.audio} onChange={(audio) => patch('alpha', { audio })} label={t('exportCenter.includeAudio')} />
                   )}
+                  <Field label={t('exportCenter.workers')}>
+                    <Chips
+                      value={s.workers}
+                      options={[
+                        { value: 0, label: t('exportCenter.workersAuto') },
+                        { value: 2, label: '2' },
+                        { value: 4, label: '4' },
+                        { value: 6, label: '6' },
+                        { value: 8, label: '8' },
+                      ]}
+                      onChange={(workers) => patch('workers', workers)}
+                    />
+                  </Field>
                   <Callout>{t('exportCenter.alphaHint')}</Callout>
                 </>
               )}

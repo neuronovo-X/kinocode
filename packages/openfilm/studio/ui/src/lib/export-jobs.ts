@@ -12,8 +12,8 @@ type Framing = { frame?: FilmFrameId; fill?: FilmFrameFill; burnSubtitles?: bool
  * project's name when there is none). */
 export type ExportRequest = { range?: [number, number]; label?: string; name?: string } & (
   | (Framing & { kind: 'video'; codec: ExportVideoCodec; shortEdge?: number; fps: number; quality: ExportQuality; audio: boolean;
-    clip?: string; scale?: number; preset?: string; sidecar?: 'srt' | 'vtt' })
-  | (Framing & { kind: 'gif'; width: number; fps: number })
+    clip?: string; scale?: number; preset?: string; sidecar?: 'srt' | 'vtt'; workers?: number })
+  | (Framing & { kind: 'gif'; width: number; fps: number; workers?: number })
   | { kind: 'audio'; format: 'wav' | 'm4a' | 'mp3'; mix: boolean; stems: boolean }
   | (Framing & { kind: 'stills'; format: 'png' | 'jpg'; shortEdge: number; at?: number[] })
   | (Framing & { kind: 'poster'; format: 'png' | 'jpg'; shortEdge: number; at?: number })
