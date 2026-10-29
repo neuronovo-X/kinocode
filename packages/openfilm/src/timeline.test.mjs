@@ -561,6 +561,30 @@ test('a film of many pages keeps only a few open: one far from the playhead is c
   }
 });
 
+test('a film of many pages that say their length is ready without opening them; a page opened by its frame is laid out at its own size', { timeout: 60_000 }, async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'of-lazy-'));
+  const clips = [];
+  for (let i = 0; i < 12; i++) {
+    writeFileSync(join(dir, `p${i}.html`), `<!doctype html><body style="margin:0"><p id="w"></p>
+<script>window.film={duration:5,width:640,height:360,frame(t){document.getElementById('w').textContent='p${i} '+t.toFixed(2)}}</script></body>`);
+    clips.push({ id: `p${i}`, src: `p${i}.html`, at: i, time: [0, 1] });
+  }
+  writeFileSync(join(dir, 'film.html'), filmHtml({ stage: { w: 320, h: 180 }, tracks: [{ clips }] }));
+  const s = await open(dir);
+  const opened = () => s.film.page.evaluate(() => [...document.querySelectorAll('iframe')].filter((f) => f.contentWindow?.film).length);
+  try {
+    assert.equal(s.film.meta.duration, 12, 'lengths from #t=, no page opened for them');
+    assert.equal(await opened(), 0, 'none opened by loading');
+    await s.film.seek(7.5);
+    const n = await opened();
+    assert.ok(n >= 1 && n <= 8, `opened: ${n}`);
+    const span = await s.film.page.evaluate(() => window.__filmSpans().find((c) => c.id === 'p7'));
+    assert.deepEqual([span.w, span.h, span.native], [640, 360, 5], 'size and length read once opened');
+  } finally {
+    await s.close();
+  }
+});
+
 test('a host waits for a film as long as it keeps loading; a page that never gets further fails in time', { timeout: 60_000 }, async () => {
   const dir = mkdtempSync(join(tmpdir(), 'of-progress-'));
   /* five pages ready one after another, 0.5 s apart: 2.5 s in all, longer than the host waits without news */

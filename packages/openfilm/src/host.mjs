@@ -432,7 +432,7 @@ export class FilmPage {
   }
 
   /** Draw t and wait until the picture is complete; a frame that never finishes fails after `timeoutMs`. */
-  async seek(t, { timeoutMs = 60_000 } = {}) {
+  async seek(t, { timeoutMs = 180_000 } = {}) {
     const drawn = this.page.evaluate(async (t) => {
       if (!window.film || typeof window.film.frame !== 'function') throw new Error('window.film.frame is gone (the page reloaded or replaced it)');
       window.filmHost?.time?.(t);

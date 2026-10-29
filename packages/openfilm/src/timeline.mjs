@@ -567,6 +567,9 @@ const pageLimited = gate(4);
 /** the pages open now (or opening) */
 const pagesAwake = new Set();
 
+/** a film with more pages than are kept open: its pages are not all opened to load it (see load) */
+const manyPages = () => doc.tracks.reduce((n, t) => n + t.clips.filter((r) => kindOf(r) === 'page').length, 0) > PAGES_AWAKE;
+
 /**
  * Open a page clip's file and wait for its window.film to be ready. Rejects when the page is not a film; resolves
  * without opening when it was let go meanwhile (see restPage).
@@ -601,6 +604,15 @@ function wakePage(c) {
     c.drawn = false;
     /* its own size, when it says one (else its clip's size, or the stage's: see settle) */
     if (c.child.width > 0 && c.child.height > 0) c.own = { w: c.child.width, h: c.child.height };
+    if (c.lazy) {
+      /* read now what load left unread: the page's length and size, then the clip laid out at that size */
+      c.lazy = false;
+      const length = c.child.duration;
+      c.native = Number.isFinite(length) && length > 0 ? length : undefined;
+      const own = c.own ?? c.row.size ?? stage;
+      c.nw = own.w; c.nh = own.h;
+      dress(c, c.row);
+    }
     window.__filmEditor.stage.woke?.();
   });
   pagesAwake.add(c);
@@ -779,6 +791,11 @@ async function load(row, track, ti, el) {
     /* a page that is not there: its clip keeps its time, at the stage's size */
     c.missing = true;
     c.nw = stage.w; c.nh = stage.h;
+  } else if (row.time?.length === 2 && manyPages()) {
+    /* a film of many pages: one that says its own length (#t=a,b) is not opened to read it. Its size and source length
+       are read when it first opens near the playhead (see wakePage); until then it is laid out at its clip's size */
+    c.row = row;
+    c.lazy = true;
   } else {
     /* opened to read its length (the host serves it unopened, see holdPages; filmStart gives it the stage's size) */
     c.row = row;
