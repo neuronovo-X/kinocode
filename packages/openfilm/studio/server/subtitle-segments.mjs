@@ -265,6 +265,7 @@ function stopEnds(prev, next) {
 
 /** @param {string} ch @param {SubtitleSegmentRules} R */
 function weightOf(ch, R) {
+  if (/[0-9IVXLC]/.test(ch)) return 1.6;   // цифра читается словом («862» = «восемьсот шестьдесят второй»): иначе ложная пауза рвёт субтитр
   if (CJK.test(ch) || HANGUL.test(ch)) return 1;
   if (LETTER.test(ch)) return R.weight.latin;
   if (/\s/.test(ch)) return R.weight.space;
